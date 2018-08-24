@@ -1,0 +1,14 @@
+[Unit]
+Description=Shutdown with Python daemon
+After=local-fs.target network.target
+
+[Service]
+Restart=always
+RestartSec=3
+PIDFile=/var/run/python_shutdown.pid
+ExecStart=/home/pi/shutdown.py
+Type=simple
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target
