@@ -130,7 +130,7 @@ Now that we just installed Motion, let's address the above-mentioned requirement
 First, copy the SystemD file and enable the service:
 
 ```bash
-sudo cp motion/motion.service /etc/systemd/system/
+sudo cp motion/data/motion.service /etc/systemd/system/
 sudo systemctl enable motion.service
 ```
 
@@ -148,7 +148,11 @@ Then run:
 
 ```bash
 sudo systemctl daemon-reload
+sudo systemctl start motion
+sudo systemctl status motion
 ```
+
+If that does not work, use the file `motion.service` from this repository.
 
 - _Must be able to live stream to the Internet if I want to_
 
