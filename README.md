@@ -139,7 +139,7 @@ Add these two lines below `[Service]` and edit the third line:
 ```text
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/motion -n -c /home/pi/motion-dist.conf
+ExecStart=/usr/local/bin/motion -n -c /home/pi/raspberry-pi-security-camera/motion-dist.conf
 ```
 
 Replace the existing line `ExecStart` with the one above. `-n` is to force non-daemon mode.
@@ -152,7 +152,7 @@ sudo systemctl start motion
 sudo systemctl status motion
 ```
 
-If that does not work, use the file `motion.service` from this repository.
+If that does not work, use the file `motion.service` from this repository, after cloning this repository in your home folder.
 
 - _Must be able to live stream to the Internet if I want to_
 
@@ -178,9 +178,9 @@ If that does not work, use the file `motion.service` from this repository.
 
 ```bash
 # Sends out an email saying hi and returns
-0    12 * * * /home/pi/alive-script.sh --daily
+0    12 * * * /home/pi/raspberry-pi-security-camera/alive-script.sh --daily
 # Checks for remaining space left, delete pics and vids if necessary
-*/30 *  * * * /home/pi/alive-script.sh
+*/30 *  * * * /home/pi/raspberry-pi-security-camera/alive-script.sh
 # Deletes all pics and vids created more than 30 days ago
 0 11 * * * find /home/pi/pics_and_vids/ -type f -mtime +30 -exec rm '{}' \;
 ```
@@ -192,9 +192,9 @@ If that does not work, use the file `motion.service` from this repository.
 Add the following in /etc/rc.local, right above `exit 0`:
 
 ```bash
-echo "So you know... ($(date))" | mail -s "Rpi turned on" me@domain &
+echo "So you know... ($(date))" | mail -s "Rpi turned on" root &
 sleep 2
-echo -e "So you know... ($(date))\n\n$(tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on (with syslog)" me@domain &
+echo -e "So you know... ($(date))\n\n$(tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on (with syslog)" root &
 sleep 15
 exit 0
 ```
@@ -205,7 +205,7 @@ An alternative is to add a cronjob that runs at every reboot, sleeps for two min
 chmod +x boot-email.sh
 sudo su
 crontab -e
-@reboot /home/pi/boot-email.sh
+@reboot /home/pi/raspberry-pi-security-camera/boot-email.sh
 ```
 
 - _Must be resiliant to power outage, and auto-restart. Must also handle cases when network is not available_
@@ -221,6 +221,7 @@ crontab -e
   > I bought a [switch cable from Amazon](http://a.co/d/2TyyK1D), connected it to the pins 5 and 6 (GROUND and GPIO 3) and followed this [tutorial](https://github.com/TonyLHansen/raspberry-pi-safe-off-switch/):
 
 ```bash
+sudo apt install python3-gpiozero
 sudo cp shutdown.service /etc/systemd/system
 sudo systemctl enable shutdown.service
 sudo systemctl daemon-reload

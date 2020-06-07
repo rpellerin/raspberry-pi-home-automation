@@ -6,7 +6,7 @@ After=local-fs.target network.target
 PIDFile=/var/run/motion.pid
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/motion -n -c /home/pi/motion-dist.conf
+ExecStart=/usr/local/bin/motion -n -c /home/pi/raspberry-pi-security-camera/motion-dist.conf
 Type=simple
 StandardError=null
 
