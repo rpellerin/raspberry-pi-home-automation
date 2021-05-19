@@ -7,7 +7,8 @@ from signal import pause
 import os, sys
 import warnings
 
-offGPIO = 3 # PIN 5
+#offGPIO = 3 # PIN 5
+offGPIO = 15 # PIN 40
 holdTime = 2
 ledGPIO = 16 # On Rpi 1 model B
 
