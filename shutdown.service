@@ -5,7 +5,7 @@ After=local-fs.target network.target
 [Service]
 Restart=always
 RestartSec=3
-PIDFile=/var/run/python_shutdown.pid
+PIDFile=/run/python_shutdown.pid
 ExecStart=/home/pi/raspberry-pi-security-camera/shutdown.py
 Type=simple
 StandardError=null

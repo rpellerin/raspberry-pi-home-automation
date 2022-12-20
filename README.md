@@ -222,10 +222,12 @@ crontab -e
 
 ```bash
 sudo apt install python3-gpiozero
-sudo cp shutdown.service /etc/systemd/system
+sudo cp shutdown.service door-sensor.service /etc/systemd/system
 sudo systemctl enable shutdown.service
+sudo systemctl enable door-sensor.service
 sudo systemctl daemon-reload
 sudo systemctl start shutdown.service
+sudo systemctl start door-sensor.service
 ```
 
 - _Must detect when no connectivity and be resiliant to it_
