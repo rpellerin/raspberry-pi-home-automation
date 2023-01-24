@@ -221,7 +221,7 @@ crontab -e
   > I bought a [switch cable from Amazon](http://a.co/d/2TyyK1D), connected it to the pins 5 and 6 (GROUND and GPIO 3) and followed this [tutorial](https://github.com/TonyLHansen/raspberry-pi-safe-off-switch/):
 
 ```bash
-sudo apt install python3-gpiozero redis-server
+sudo apt install python3-gpiozero redis-server python3-picamera
 pip3 install -r requirements.txt
 sudo cp shutdown.service door-sensor.service /etc/systemd/system
 sudo systemctl enable shutdown.service

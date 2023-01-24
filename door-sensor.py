@@ -9,6 +9,7 @@ import signal
 import redis
 import datetime
 import requests
+import subprocess
 
 url="https://script.google.com/macros/s/XYZ/exec"
 
@@ -46,18 +47,27 @@ GPIO.setup(DOOR_SENSOR_PIN, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 # Set the cleanup handler for when user hits Ctrl-C to exit
 signal.signal(signal.SIGINT, cleanup)
 
-r = redis.Redis()
+r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
 
 print("Listening to the door state change...")
+
+video_recording = None
 
 while True:
     oldIsOpen = isOpen
     isOpen = GPIO.input(DOOR_SENSOR_PIN)
 
     if (isOpen != oldIsOpen):
+        door_status = 'open' if isOpen else 'closed'
+        print("Door is currently " + door_status)
+
+        r.publish('door_status', door_status)
+
+        if (isOpen) and ((video_recording == None) or (video_recording.returncode == None)):
+            video_recording = subprocess.Popen(["/home/pi/raspberry-pi-security-camera/video-to-email.sh"])
+
         utc_offset_in_hours = int(-time.timezone/3600)
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=utc_offset_in_hours))).strftime('%d/%m/%Y %H:%M:%S')
-        door_status = 'open' if isOpen else 'closed'
         data = { 'timestamp': now, 'door_status': door_status }
 
         successfully_sent = False
