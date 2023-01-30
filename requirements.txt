@@ -1,3 +1,4 @@
 redis==4.4.0
 RPi.GPIO==0.7.1
 requests==2.28.2
+gpiozero==1.6.2
