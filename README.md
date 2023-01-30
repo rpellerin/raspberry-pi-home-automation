@@ -34,7 +34,7 @@ For this project, I used an old Rasberry Pi 1 model B revision 2, an Ethernet ca
 
 Setting it up was fairly straightforward, I simply followed [a tutorial I had already written](https://romainpellerin.eu/raspberry-pi-the-ultimate-guide.html). However I did not set `max_usb_current=1` cause my power supply cannot output more than 1A. When running `raspi-config`, make sure to:
 
-- Enable the camera
+- Enable the camera (`sudo raspi-config` > 3 Interface Options > I1 Legacy Camera)
 - Give the GPU at least 128MB (more is recommended, apparently)
 
 You can stop reading the tutorial at the end of the section "Configuration".
