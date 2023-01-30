@@ -34,7 +34,7 @@ For this project, I used an old Rasberry Pi 1 model B revision 2, an Ethernet ca
 
 Setting it up was fairly straightforward, I simply followed [a tutorial I had already written](https://romainpellerin.eu/raspberry-pi-the-ultimate-guide.html). However I did not set `max_usb_current=1` cause my power supply cannot output more than 1A. When running `raspi-config`, make sure to:
 
-- Enable the camera (`sudo raspi-config` > 3 Interface Options > I1 Legacy Camera)
+- Enable the camera. First make sure it works by running `libcamera-still -o test.jpg`.
 - Give the GPU at least 128MB (more is recommended, apparently)
 
 You can stop reading the tutorial at the end of the section "Configuration".
@@ -221,7 +221,7 @@ crontab -e
   > I bought a [switch cable from Amazon](http://a.co/d/2TyyK1D), connected it to the pins 5 and 6 (GROUND and GPIO 3) and followed this [tutorial](https://github.com/TonyLHansen/raspberry-pi-safe-off-switch/):
 
 ```bash
-sudo apt install python3-gpiozero redis-server python3-picamera
+sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg
 python3 -m venv .env
 source .env/bin/activate
 pip3 install -r requirements.txt
