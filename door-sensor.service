@@ -7,7 +7,7 @@ Restart=always
 RestartSec=3
 PIDFile=/run/python_door-sensor.pid
 User=pi
-ExecStart=/home/pi/raspberry-pi-security-camera/door-sensor.py
+ExecStart=/home/pi/raspberry-pi-security-camera/.env/bin/python3 /home/pi/raspberry-pi-security-camera/door-sensor.py
 Type=simple
 StandardError=null
 
