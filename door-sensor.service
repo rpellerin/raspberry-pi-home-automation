@@ -1,6 +1,6 @@
 [Unit]
 Description=Detect door state changes
-After=local-fs.target network.target
+After=local-fs.target network-online.target
 
 [Service]
 Restart=always

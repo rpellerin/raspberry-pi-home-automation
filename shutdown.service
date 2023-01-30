@@ -1,6 +1,6 @@
 [Unit]
 Description=Shutdown with Python daemon
-After=local-fs.target network.target
+After=local-fs.target network-online.target
 
 [Service]
 Restart=always
