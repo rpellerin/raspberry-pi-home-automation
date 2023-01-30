@@ -81,8 +81,8 @@ while True:
             print(data)
             r.rpush('door_status', str(data))
             if (isOpen):
-                os.system('echo "Hello, friend." | mail -s "Door opened!" root@localhost')
+                os.system('echo "Failed to post to Google." | mail -s "Door opened!" root@localhost')
             else:
-                os.system('echo "Hello, friend." | mail -s "Door closed" root@localhost')
+                os.system('echo "Failed to post to Google." | mail -s "Door closed" root@localhost')
 
     time.sleep(0.1)
