@@ -222,6 +222,8 @@ crontab -e
 
 ```bash
 sudo apt install python3-gpiozero redis-server python3-picamera
+python3 -m venv .env
+source .env/bin/activate
 pip3 install -r requirements.txt
 sudo cp shutdown.service door-sensor.service /etc/systemd/system
 sudo systemctl enable shutdown.service
