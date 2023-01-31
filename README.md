@@ -107,7 +107,7 @@ Add these two lines below `[Service]` and edit the third line:
 ```text
 Restart=always
 RestartSec=3
-ExecStart=/usr/local/bin/motion -n -c /home/pi/raspberry-pi-security-camera/motion-dist.conf
+ExecStart=/usr/local/bin/motion -n -c /home/pi/raspberry-pi-home-automation/motion-dist.conf
 ```
 
 Replace the existing line `ExecStart` with the one above. `-n` is to force non-daemon mode.
@@ -120,7 +120,7 @@ sudo systemctl start motion
 sudo systemctl status motion
 ```
 
-If that does not work, use the file `motion.service` from this repository, after cloning this repository in your home folder.
+If that does not work, use the file `services/motion.service` from this repository, after cloning this repository in your home folder.
 
 - _Must be able to live stream to the Internet if I want to_
 
@@ -146,9 +146,9 @@ If that does not work, use the file `motion.service` from this repository, after
 
 ```bash
 # Sends out an email saying hi and returns
-0    12 * * * /home/pi/raspberry-pi-security-camera/alive-script.sh --daily
+0    12 * * * /home/pi/raspberry-pi-home-automation/alive-script.sh --daily
 # Checks for remaining space left, delete pics and vids if necessary
-*/30 *  * * * /home/pi/raspberry-pi-security-camera/alive-script.sh
+*/30 *  * * * /home/pi/raspberry-pi-home-automation/alive-script.sh
 # Deletes all pics and vids created more than 30 days ago
 0 11 * * * find /home/pi/pics_and_vids/ -type f -mtime +30 -exec rm '{}' \;
 ```
@@ -173,7 +173,7 @@ An alternative is to add a cronjob that runs at every reboot, sleeps for two min
 chmod +x boot-email.sh
 sudo su
 crontab -e
-@reboot /home/pi/raspberry-pi-security-camera/boot-email.sh
+@reboot /home/pi/raspberry-pi-home-automation/boot-email.sh
 ```
 
 - _Must be resiliant to power outage, and auto-restart. Must also handle cases when network is not available_
@@ -193,7 +193,7 @@ sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg
 python3 -m venv .env
 source .env/bin/activate
 pip3 install -r requirements.txt
-sudo cp shutdown.service door-sensor.service /etc/systemd/system
+sudo cp services/shutdown.service services/door-sensor.service /etc/systemd/system
 sudo systemctl enable shutdown.service
 sudo systemctl enable door-sensor.service
 sudo systemctl daemon-reload

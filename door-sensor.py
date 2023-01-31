@@ -64,7 +64,7 @@ while True:
         r.publish('door_status', door_status)
 
         if (isOpen) and ((video_recording == None) or (video_recording.returncode == None)):
-            video_recording = subprocess.Popen(["/home/pi/raspberry-pi-security-camera/video-to-email.sh"])
+            video_recording = subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh"])
 
         utc_offset_in_hours = int(-time.timezone/3600)
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=utc_offset_in_hours))).strftime('%d/%m/%Y %H:%M:%S')
