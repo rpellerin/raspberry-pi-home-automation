@@ -1,4 +1,4 @@
-# Setup
+# Setting up the Raspberry Pi
 
 Follow [a tutorial I have written](https://romainpellerin.eu/raspberry-pi-the-ultimate-guide.html) to set up the Pi. Do not set `max_usb_current=1` if the power supply cannot output more than 1A. When running `raspi-config`, make sure to:
 
@@ -6,14 +6,6 @@ Follow [a tutorial I have written](https://romainpellerin.eu/raspberry-pi-the-ul
 - Give the GPU at least 128MB (more is recommended, apparently)
 
 You can stop reading the tutorial at the end of the section "Configuration".
-
-I also recommend setting it so that it reboots automatically, periodically:
-
-```bash
-sudo su
-crontab -e
-15 0 * * */3 /sbin/shutdown -r
-```
 
 ## Fine tuning wthen using a SD card only (no external SDD)
 
@@ -39,7 +31,11 @@ sudo apt remove dphys-swapfile # Permanently
 sudo rm /var/swap
 ```
 
-## Camera
+# Temperature
+
+Head over to [the `temperature/` folder](temperature/README.md).
+
+# Security camera (CCTV)
 
 Now has come the time to turn off the Raspberry Pi, unplug the power supply, ground yourself, and plug in the camera model in the CSI port (next to the HDMI one). The camera module is very vulnerable to static eletrictiy that's why we have to be that cautious.
 
@@ -51,7 +47,7 @@ sudo vcgencmd get_camera
 
 To adjust the focus, rotate the lens (when facing it) clockwise to focus on distant objects.
 
-# Software for motion detection and video/image capture
+## Software for motion detection and video/image capture
 
 Now, we've got two options.
 
@@ -67,9 +63,9 @@ The first one seems to be quite a big project, with a large community. On the ot
 
 Also note that Motion comes with a web frontend, [MotionEye](https://github.com/ccrisan/motioneye). Since our camera has no motor to rotate, I thought there was no need for a web interface with controls. If there ever was to be motion, I would get emails with pictures anyway. Therefore I did not install MotionEye.
 
-# Motion
+## Motion
 
-## Install
+### Install
 
 Although installation through `apt` is possible, you will most likely get an outdated version of Motion. I decided to build it from their Github repo. [Here is the official turorial I followed](https://motion-project.github.io/motion_build.html#BUILD_DEBIAN). Make sure to also install `ffmpeg` with `apt` (only useful to make videos out of pictures though, but you'll probaly want to try this feature out).
 
@@ -77,7 +73,7 @@ We want Motion to be able to send emails, so let's install Exim4 by reading the 
 
 The configuration file I personally use when running Motion (`motion -c motion-dist.conf`) is here in this very repository.
 
-# Meeting the initial requirements
+# Meeting the [initial requirements](MOTIVATION.md)
 
 Now that we just installed Motion, let's address the above-mentioned requirements one by one.
 
