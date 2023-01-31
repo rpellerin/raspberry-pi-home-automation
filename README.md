@@ -140,37 +140,36 @@ If that does not work, use the file `services/motion.service` from this reposito
 
   > A good solution would be to create a script that runs every 30mins thanks to cron, check for space left. If too little, it zips all the pictures and videos just in case you did not get them, email it to you and then delete the zip and the original files. Please see the file `alive-script.sh` in this repository. Then run `crontab -e` as `pi` and:
 
-```bash
-# Sends out an email saying hi and returns
-0    12 * * * /home/pi/raspberry-pi-home-automation/alive-script.sh --daily
-# Checks for remaining space left, delete pics and vids if necessary
-*/30 *  * * * /home/pi/raspberry-pi-home-automation/alive-script.sh
-# Deletes all pics and vids created more than 30 days ago
-0 11 * * * find /home/pi/pics_and_vids/ -type f -mtime +30 -exec rm '{}' \;
-```
+  ```bash
+  # Sends out an email saying hi and returns
+  0    12 * * * /home/pi/raspberry-pi-home-automation/alive-script.sh --daily
+  # Checks for remaining space left, delete pics and vids if necessary
+  */30 *  * * * /home/pi/raspberry-pi-home-automation/alive-script.sh
+  # Deletes all pics and vids created more than 30 days ago
+  0 11 * * * find /home/pi/pics_and_vids/ -type f -mtime +30 -exec rm '{}' \;
+  ```
 
 - _Must notify me when being turned on and tell me how long it had been off_
 
   > Shoud be easy.
 
-Add the following in /etc/rc.local, right above `exit 0`:
+  Add a cronjob that runs at every reboot, sleeps for 20 secs (in case network is not immediately available) and sends an email:
 
-```bash
-echo "So you know... ($(date))" | mail -s "Rpi turned on" root &
-sleep 2
-echo -e "So you know... ($(date))\n\n$(tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on (with syslog)" root &
-sleep 15
-exit 0
-```
+  ```bash
+  sudo su
+  crontab -e
+  @reboot /bin/sleep 20; /usr/sbin/exim -qff; echo "So you know... ($(/bin/date))\n\n$(/usr/bin/tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on 20secs ago" root
+  ```
 
-An alternative is to add a cronjob that runs at every reboot, sleeps for two minutes (in case network is not immediately available) and sends an email. See `boot-email.sh`. Then:
+  ***
 
-```bash
-chmod +x boot-email.sh
-sudo su
-crontab -e
-@reboot /home/pi/raspberry-pi-home-automation/boot-email.sh
-```
+  _Old method: add the following in /etc/rc.local, right above `exit 0`:_
+
+  ```bash
+  sleep 20
+  echo -e "So you know... ($(/bin/date))\n\n$(/usr/bin/tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on 20secs ago" root
+  exit 0
+  ```
 
 - _Must be resiliant to power outage, and auto-restart. Must also handle cases when network is not available_
 
