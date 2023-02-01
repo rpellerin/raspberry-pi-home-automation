@@ -211,3 +211,4 @@ Hope this helps.
 - [Smarten up your Pi Zero Web Camera with Image Analysis and Amazon Web Services (Part 1)](https://www.bouvet.no/bouvet-deler/utbrudd/smarten-up-your-pi-zero-web-camera-with-image-analysis-and-amazon-web-services-part-1)
 - [Limit the runtime of a cronjob or script](https://ma.ttias.be/limit-runtime-cronjob-script/)
 - [A Guide to Recording 660FPS Video On A $6 Raspberry Pi Camera](http://blog.robertelder.org/recording-660-fps-on-raspberry-pi-camera/)
+- [Xiaomi Miijia LYWSD03MMC with pure bluetoothctl](https://false.ekta.is/2021/06/xiaomi-miijia-lywsd03mmc-with-pure-bluetoothctl/)
