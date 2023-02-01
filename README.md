@@ -212,3 +212,4 @@ Hope this helps.
 - [Limit the runtime of a cronjob or script](https://ma.ttias.be/limit-runtime-cronjob-script/)
 - [A Guide to Recording 660FPS Video On A $6 Raspberry Pi Camera](http://blog.robertelder.org/recording-660-fps-on-raspberry-pi-camera/)
 - [Xiaomi Miijia LYWSD03MMC with pure bluetoothctl](https://false.ekta.is/2021/06/xiaomi-miijia-lywsd03mmc-with-pure-bluetoothctl/)
+- [Multiple cameras with the Raspberry Pi and OpenCV](https://pyimagesearch.com/2016/01/18/multiple-cameras-with-the-raspberry-pi-and-opencv/)
