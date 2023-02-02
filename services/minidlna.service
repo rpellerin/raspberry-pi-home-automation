@@ -1,0 +1,21 @@
+[Unit]
+Description=MiniDLNA lightweight DLNA/UPnP-AV server
+Documentation=man:minidlnad(1) man:minidlna.conf(5)
+After=local-fs.target remote-fs.target autofs
+
+[Service]
+User=minidlna
+Group=minidlna
+
+Environment=CONFIGFILE=/etc/minidlna.conf
+Environment=DAEMON_OPTS=-r
+EnvironmentFile=-/etc/default/minidlna
+
+RuntimeDirectory=minidlna
+LogsDirectory=minidlna
+PIDFile=/run/minidlna/minidlna.pid
+ExecStart=/usr/sbin/minidlnad -f $CONFIGFILE -P /run/minidlna/minidlna.pid -S $DAEMON_OPTS
+
+
+[Install]
+WantedBy=multi-user.target
