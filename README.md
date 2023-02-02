@@ -188,12 +188,14 @@ sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg
 python3 -m venv .env
 source .env/bin/activate
 pip3 install -r requirements.txt
-sudo cp services/shutdown.service services/door-sensor.service /etc/systemd/system
+sudo cp services/* /etc/systemd/system
 sudo systemctl enable shutdown.service
 sudo systemctl enable door-sensor.service
+sudo systemctl enable minidlna.service
 sudo systemctl daemon-reload
 sudo systemctl start shutdown.service
 sudo systemctl start door-sensor.service
+sudo systemctl start minidlna.service
 ```
 
 - _Must detect when no connectivity and be resiliant to it_
