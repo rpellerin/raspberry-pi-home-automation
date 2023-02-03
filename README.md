@@ -35,6 +35,10 @@ sudo rm /var/swap
 
 Head over to [the `temperature/` folder](temperature/README.md).
 
+# MiniDLNA
+
+Head over to [the `minidlna/` folder](minidlna/README.md).
+
 # Security camera (CCTV)
 
 Now has come the time to turn off the Raspberry Pi, unplug the power supply, ground yourself, and plug in the camera model in the CSI port (next to the HDMI one). The camera module is very vulnerable to static eletrictiy that's why we have to be that cautious.
@@ -188,14 +192,12 @@ sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg
 python3 -m venv .env
 source .env/bin/activate
 pip3 install -r requirements.txt
-sudo cp services/* /etc/systemd/system
+sudo cp services/shutdown.service services/door-sensor.service /etc/systemd/system
 sudo systemctl enable shutdown.service
 sudo systemctl enable door-sensor.service
-sudo systemctl enable minidlna.service
 sudo systemctl daemon-reload
 sudo systemctl start shutdown.service
 sudo systemctl start door-sensor.service
-sudo systemctl start minidlna.service
 ```
 
 - _Must detect when no connectivity and be resiliant to it_
