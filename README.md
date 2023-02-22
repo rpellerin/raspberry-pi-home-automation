@@ -126,6 +126,14 @@ If that does not work, use the file `services/motion.service` from this reposito
 
   > Addressed in the configuration file above. Make sure to open ports to the Internet in your router configuration.
 
+## Download the latest French news
+
+```bash
+crontab -e
+30 21 * * * /home/pi/raspberry-pi-home-automation/.env/bin/python /home/pi/raspberry-pi-home-automation/20h.py
+0 21 * * * find /var/lib/minidlna -type f -mtime +2 -exec rm '{}' \;
+```
+
 ## Advanced features (from most important to least)
 
 - _Must no fail because of the SD card_
