@@ -10,3 +10,7 @@ smbus2==0.4.0
 urllib3==1.26.5
 beautifulsoup4==4.11.2
 yt-dlp==2023.2.17
+matplotlib==3.7.1
+numpy==1.24.2
+Pillow==9.4.0
+inky==1.5.0

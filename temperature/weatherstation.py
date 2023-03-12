@@ -5,6 +5,7 @@ import requests
 import datetime
 import sys
 import redis
+import json
 
 url="https://script.google.com/macros/s/XYZ/exec"
 
@@ -35,7 +36,7 @@ raw_data = bme280.sample(bus, address, calibration_params)
 data = { 'timestamp': now, 'temperature': raw_data.temperature, 'humidity': raw_data.humidity, 'pressure': raw_data.pressure }
 
 r = redis.Redis()
-r.lpush('weather_reports', str(data))
+r.lpush('weather_reports', json.dumps(data))
 r.ltrim('weather_reports', 0, 9999) # No more than 10,000 elements stored in Redis
 
 successfully_sent = False
