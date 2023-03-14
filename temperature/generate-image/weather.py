@@ -2,6 +2,7 @@
 from os import path, DirEntry
 import configparser
 import os
+import requests
 import sys
 import math
 import time
@@ -123,31 +124,26 @@ class weatherInfomation(object):
             pass
 
     def loadWeatherData(self):
-        #import requests
-        #self.weatherInfo = requests.get(self.forecast_api_uri).json()
+        openweather_response = requests.get(self.forecast_api_uri).json()
         self.weatherInfo = self.loadLocalWeatherData()
+        self.weatherInfo['current']['outside_temp'] = openweather_response['current']['temp']
+        self.weatherInfo['current']['weather'] = openweather_response['current']['weather']
     
     def loadLocalWeatherData(self):
         # We want last 4 hours. There are 20 reports per hour, so 80.
         weather_reports = r.lrange('weather_reports', 0, 80-1)
-
         def sanitize(row):
             json_row = json.loads(row)
             return {
                 'temp': json_row['temperature'],
-                'weather': [
-                    {
-                        'icon': '01d',
-                        'description': 'Beautiful day'
-                    }
-                ],
                 'humidity': round(json_row['humidity'], 1),
                 'pressure': json_row['pressure'],
                 'dt': datetime.strptime(json_row['timestamp'], '%d/%m/%Y %H:%M:%S').timestamp()
             }
 
         hourly = list(map(sanitize, weather_reports))[::-1] # [::-1] reverses it
-        return { 'current': hourly[-1], 'hourly': hourly }
+        current = hourly[-1].copy()
+        return { 'current': current, 'hourly': hourly }
 
 
 class fonts(Enum):
@@ -209,6 +205,7 @@ def drawWeather(wi, cv):
     draw.text((width - 10, 2), wi.one_time_message, getDisplayColor(BLACK), anchor="ra", font=getFont(fonts.normal, fontsize=12))
     
     temp_cur = wi.weatherInfo[u'current'][u'temp']
+    outside_temp_cur = wi.weatherInfo[u'current'][u'outside_temp']
     icon = str(wi.weatherInfo[u'current'][u'weather'][0][u'icon'])
     description = wi.weatherInfo[u'current'][u'weather'][0][u'description']
     humidity = wi.weatherInfo[u'current'][u'humidity']
@@ -227,35 +224,31 @@ def drawWeather(wi, cv):
     offsetX = 10
     offsetY = 40
 
-    # Draw temperature string
-    tempOffset = 20 
-    temperatureTextSize = draw.textsize(getTemperatureString(temp_cur), font =getFont(fonts.normal, fontsize=120))
-    if(temperatureTextSize[0] < 71):
-        # when the temp string is a bit short.
-        tempOffset = 45
-
     draw.text((5 + offsetX , 35 + offsetY), hourMinutes, getDisplayColor(BLACK),font=getFont(fonts.light,fontsize=24))
-    draw.text((tempOffset + offsetX, 50 + offsetY), getTemperatureString(temp_cur), getFontColor(temp_cur, wi),font =getFont(fonts.normal, fontsize=120))
-    draw.text((temperatureTextSize[0] + 10 + tempOffset + offsetX, 85 + offsetY), getUnitSign(), getFontColor(temp_cur, wi), anchor="la", font =getFont(fonts.icon, fontsize=80))
 
     # draw current weather icon
     draw.text((440 + offsetX, 40 + offsetY), iconMap[icon], getDisplayColor(colorMap[icon]), anchor="ma",font=getFont(fonts.icon, fontsize=160))
-
     draw.text((width - 8, 35 + offsetY), description, getDisplayColor(BLACK), anchor="ra", font =getFont(fonts.light,fontsize=24))
+
+    def draw_value(label, value, unit, unit_font, color, x, y):
+        draw.text((x, y), label, getDisplayColor(BLACK),font =getFont(fonts.light,fontsize=24))
+        draw.text((x, y + 25), value, color, font =getFont(fonts.normal, fontsize=50))
+        textSize = round(draw.textlength(value, font =getFont(fonts.normal, fontsize=50)))
+        draw.text((x + textSize + 5, y + 49), unit, color, font=getFont(unit_font,fontsize=22))
+
+    # Inside temperature
+    draw_value("Inside", getTemperatureString(temp_cur), getUnitSign(), fonts.icon, getFontColor(temp_cur, wi), offsetX + 5, offsetY + 80)
+
+    # Outside temperature
+    draw_value("Outside", getTemperatureString(outside_temp_cur), getUnitSign(), fonts.icon, getFontColor(outside_temp_cur, wi), offsetX + 185, offsetY + 80)
 
     offsetY = 210
     
     # Humidity (lastest value)
-    draw.text((5 + offsetX , 175 + 40), "Humidity", getDisplayColor(BLACK),font =getFont(fonts.light,fontsize=24))
-    draw.text((10 + offsetX, 200 + 40), str(humidity),getHumidityColor(humidity),font =getFont(fonts.normal, fontsize=50))
-    humidityTextSize = draw.textsize(str(humidity), font =getFont(fonts.normal, fontsize=50))
-    draw.text((humidityTextSize[0] + 15 + offsetX, 224 + 40), '%', getHumidityColor(humidity), font=getFont(fonts.normal,fontsize=22))
+    draw_value("Humidity", str(humidity), '%', fonts.normal, getHumidityColor(humidity), offsetX + 5, 215)
 
     # Pressure (lastest value)
-    draw.text((humidityTextSize[0] + 85 + offsetX , 175 + 40), "Pressure", getDisplayColor(BLACK),font =getFont(fonts.light,fontsize=24))
-    draw.text((humidityTextSize[0] + 90 + offsetX, 200 + 40), "%d" % pressure, getDisplayColor(BLACK),font =getFont(fonts.normal, fontsize=50))
-    pressureTextSize = draw.textsize("%d" % pressure, font =getFont(fonts.normal, fontsize=50))
-    draw.text((humidityTextSize[0] + pressureTextSize[0] + 95 + offsetX, 224 + 40), "hPa", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=22))
+    draw_value("Pressure", "%d" % pressure, 'hPa', fonts.normal, getDisplayColor(BLACK), offsetX + 185, 215)
     
     time_dt_array = []
     tempArray = []
@@ -265,7 +258,6 @@ def drawWeather(wi, cv):
         temp = item[u'temp']
         humidity = item[u'humidity']
         pressure = item[u'pressure']
-        icon = item[u'weather'][0][u'icon']
         time_dt_array.append(time_dt)
         tempArray.append(temp)
         humidityArray.append(humidity)
