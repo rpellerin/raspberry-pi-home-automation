@@ -49,16 +49,14 @@ Then turn it back on and make sure it is correctly detected:
 sudo vcgencmd get_camera
 ```
 
-To adjust the focus, rotate the lens (when facing it) clockwise to focus on distant objects.
-
 ## Software for motion detection and video/image capture
 
 Now, we've got two options.
 
-1.  Build our own solution based on [Python scripts](https://picamera.readthedocs.io/). Tedious and far from perfect.
-2.  Use an existing software program. Seems to be the best solution.
+1.  Build our own solution based on [Python scripts](https://picamera.readthedocs.io/). [I explained how I did it on my blog](https://romainpellerin.eu/raspberry-pi-noir-camera-module-and-ir-leds.html).
+2.  Use an existing software program.
 
-There are plenty of existing programs to do motion detection on a Raspberry Pi. The two most interesting ones I found are these two:
+Regarding option 2, there are plenty of existing programs to do motion detection on a Raspberry Pi. The two most interesting ones I found are these two:
 
 - [Motion](https://github.com/Motion-Project/motion/)
 - [Raspberry PI-TIMOLO](https://github.com/pageauc/pi-timolo)
