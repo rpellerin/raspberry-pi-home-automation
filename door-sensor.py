@@ -10,6 +10,10 @@ import redis
 import datetime
 import requests
 import subprocess
+import importlib
+
+turnLedOff = importlib.import_module('turn-led-off')
+turnLedOn = importlib.import_module('turn-led-on')
 
 url="https://script.google.com/macros/s/XYZ/exec"
 

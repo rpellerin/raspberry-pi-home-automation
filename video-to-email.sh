@@ -3,14 +3,14 @@
 #echo "On `date`" | mail -s "Door just opened" root@localhost
 filename="$(date +"%Y-%m-%dT%H-%M-%SZ")"
 
-# Legacy as of 2022
-#raspivid -a 12 -w 1296 -h 972 -hf -vf -fps 25 -t 15000 -b 3000000 -o "/tmp/$filename.h264" # 3000k bits per second (300kB/s)
-raspivid -a 12 -w 1296 -h 972 -fps 25 -t 15000 -b 3000000 -o "/tmp/$filename.h264" # 3000k bits per second (300kB/s)
+/home/pi/raspberry-pi-home-automation/.env/bin/python /home/pi/raspberry-pi-home-automation/turn-led-on.py &
 
-# New way of recording
-#libcamera-vid --width 1296 --height 972 --hflip --vflip --framerate 25 -t 15000 -b 3000000 -o "/tmp/$filename.h264" # 3000k bits per second (300kB/s)
+libcamera-vid -t 20000 --width 1296 --height 972 --framerate 25 - b 3000000 --rotation 180 -o "/tmp/$filename.h264" --save-pts "/tmp/$filename-timestamps.txt" # 3000k bits per second (300kB/s)
+
+/home/pi/raspberry-pi-home-automation/.env/bin/python /home/pi/raspberry-pi-home-automation/turn-led-off.py
 
 sync
-ffmpeg -r 25 -i "/tmp/$filename.h264" -vcodec copy "/tmp/$filename.mp4"
+#ffmpeg -r 25 -i "/tmp/$filename.h264" -vcodec copy "/tmp/$filename.mp4"
+mkvmerge -o "/tmp/$filename.mkv" --timecodes "0:/tmp/$filename-timestamps.txt" "/tmp/$filename.h264"
 sync
-echo "On `date`" | mail -s "Door opened" -A "/tmp/$filename.mp4" root@localhost
+echo "On `date`" | mail -s "Door opened" -A "/tmp/$filename.mkv" root@localhost
