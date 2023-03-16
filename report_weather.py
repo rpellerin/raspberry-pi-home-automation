@@ -6,8 +6,11 @@ import datetime
 import sys
 import redis
 import json
+import importlib
 
-url="https://script.google.com/macros/s/XYZ/exec"
+config = importlib.import_module('config').get_config()
+
+url=config.get('weatherstation', 'GOOGLE_SCRIPTS_WEATHER_URL')
 
 port = 1
 address = 0x76

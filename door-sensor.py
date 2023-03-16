@@ -12,10 +12,11 @@ import requests
 import subprocess
 import importlib
 
+config = importlib.import_module('config').get_config()
 turnLedOff = importlib.import_module('turn-led-off')
 turnLedOn = importlib.import_module('turn-led-on')
 
-url="https://script.google.com/macros/s/XYZ/exec"
+url=config.get('weatherstation', 'GOOGLE_SCRIPTS_WEATHER_URL')
 
 DOOR_SENSOR_PIN = 18
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from os import path, DirEntry
-import configparser
 import os
 import requests
 import sys
@@ -18,6 +17,7 @@ from inky.inky_uc8159 import Inky, BLACK, WHITE, GREEN, RED, YELLOW, ORANGE, BLU
 import matplotlib.pyplot as plt
 from matplotlib import font_manager as fm, rcParams, ticker
 import numpy as np
+import importlib
 
 r = redis.Redis()
 
@@ -27,9 +27,6 @@ canvasSizeInPixels = (600, 448)
 tmpfs_path = "/dev/shm/"
 
 # font file path(Adjust or change whatever you want)
-repo_path = os.path.dirname(os.path.realpath(__file__))
-os.chdir(repo_path)
-project_root = os.getcwd()
 
 colorMap = {
     '01d':ORANGE, # clear sky
@@ -43,11 +40,11 @@ colorMap = {
     '09d':BLACK, # shower rain
     '09n':BLACK,
     '10d':BLUE,  # rain
-    '10n':BLUE, 
+    '10n':BLUE,
     '11d':RED,   # thunderstorm
     '11n':RED,
     '13d':BLUE,  # snow
-    '13n':BLUE, 
+    '13n':BLUE,
     '50d':BLACK, # fog
     '50n':BLACK,
     'sunrise':BLACK,
@@ -93,12 +90,13 @@ iconMap = {
     'sunset':u''
 }
 
+config = importlib.import_module('config')
+
 class weatherInfomation(object):
     def __init__(self):
         #load configuration from config.txt using configparser
-        self.config = configparser.ConfigParser()
         try:
-            self.config.read_file(open(project_root + '/config.txt'))
+            self.config = config.get_config()
             self.lat = self.config.get('openweathermap', 'LAT', raw=False)
             self.lon = self.config.get('openweathermap', 'LON', raw=False)
             self.api_key = self.config.get('openweathermap', 'API_KEY', raw=False)
@@ -109,26 +107,17 @@ class weatherInfomation(object):
             self.forecast_api_uri = self.forecast_api_uri + "&units=metric"
             self.loadWeatherData()
         except:
-            self.one_time_message = "Configuration file is not found or settings are wrong.\nplease check the file : " + project_root + "/config.txt\n\nAlso check your internet connection."
+            self.one_time_message = "Configuration file is not found or settings are wrong.\nplease check the file : config.txt\n\nAlso check your internet connection."
             return
 
-        # load one time messge and remove it from the file. one_time_message can be None.
-        try:
-            self.one_time_message = self.config.get('openweathermap', 'one_time_message', raw=False)
-            self.config.set("openweathermap", "one_time_message", "")
-            # remove it.
-            with open(project_root + '/config.txt', 'w') as configfile:
-                self.config.write(configfile)
-        except:
-            self.one_time_message = ""
-            pass
+        self.one_time_message = ""
 
     def loadWeatherData(self):
         openweather_response = requests.get(self.forecast_api_uri).json()
         self.weatherInfo = self.loadLocalWeatherData()
         self.weatherInfo['current']['outside_temp'] = openweather_response['current']['temp']
         self.weatherInfo['current']['weather'] = openweather_response['current']['weather']
-    
+
     def loadLocalWeatherData(self):
         # We want last 4 hours. There are 20 reports per hour, so 80.
         weather_reports = r.lrange('weather_reports', 0, 80-1)
@@ -147,6 +136,7 @@ class weatherInfomation(object):
 
 
 class fonts(Enum):
+    project_root = config.get_project_root()
     thin = project_root + "/fonts/Roboto-Thin.ttf"
     light =  project_root + "/fonts/Roboto-Light.ttf"
     normal = project_root + "/fonts/Roboto-Black.ttf"
@@ -182,7 +172,7 @@ def getTemperatureString(temp):
         return "0"
     else:
         return formattedString
-    
+
 # return color rgb in 0 ~ 1.0 scale
 def getGraphColor(color):
     r = color_palette[color][0] / 255
@@ -203,7 +193,7 @@ def drawWeather(wi, cv):
         draw.text((width / 2, height / 2), wi.one_time_message, getDisplayColor(BLACK), anchor="mm", font=getFont(fonts.normal, fontsize=16) )
         return
     draw.text((width - 10, 2), wi.one_time_message, getDisplayColor(BLACK), anchor="ra", font=getFont(fonts.normal, fontsize=12))
-    
+
     temp_cur = wi.weatherInfo[u'current'][u'temp']
     outside_temp_cur = wi.weatherInfo[u'current'][u'outside_temp']
     icon = str(wi.weatherInfo[u'current'][u'weather'][0][u'icon'])
@@ -217,7 +207,7 @@ def drawWeather(wi, cv):
     weekDayNumber = time.strftime("%w", recorded_time)
     hourMinutes = time.strftime("%H:%M", recorded_time)
 
-    # date 
+    # date
     draw.text((15 , 5), dateString, getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=64))
     draw.text((width - 8 , 5), weekDayString, getDisplayColor(BLACK), anchor="ra", font =getFont(fonts.normal, fontsize=64))
 
@@ -243,13 +233,13 @@ def drawWeather(wi, cv):
     draw_value("Outside", getTemperatureString(outside_temp_cur), getUnitSign(), fonts.icon, getFontColor(outside_temp_cur, wi), offsetX + 185, offsetY + 80)
 
     offsetY = 210
-    
+
     # Humidity (lastest value)
     draw_value("Humidity", str(humidity), '%', fonts.normal, getHumidityColor(humidity), offsetX + 5, 215)
 
     # Pressure (lastest value)
     draw_value("Pressure", "%d" % pressure, 'hPa', fonts.normal, getDisplayColor(BLACK), offsetX + 185, 215)
-    
+
     time_dt_array = []
     tempArray = []
     humidityArray = []
@@ -301,7 +291,7 @@ def drawWeather(wi, cv):
     offsetY = 265
     draw.rectangle((offsetX, offsetY, offsetX + squareWitdh, offsetY + squareWitdh), fill=getDisplayColor(BLUE))
     draw.text((offsetX + squareWitdh + 2, offsetY), "Temp", getDisplayColor(BLACK),font=getFont(fonts.normal, fontsize=16))
-    
+
     ## Humidity
     offsetY = offsetY + 20
     draw.rectangle((offsetX, offsetY, offsetX + squareWitdh, offsetY + squareWitdh), fill=getDisplayColor(RED))
