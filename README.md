@@ -195,7 +195,7 @@ crontab -e
 
 ```bash
 sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev
-python3 -m venv .env
+python3 -m venv --system-site-packages .env
 source .env/bin/activate
 pip3 install -r requirements.txt
 sudo cp services/shutdown.service services/door-sensor.service /etc/systemd/system
