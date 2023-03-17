@@ -13,8 +13,6 @@ import subprocess
 import importlib
 
 config = importlib.import_module('config').get_config()
-turnLedOff = importlib.import_module('turn-led-off')
-turnLedOn = importlib.import_module('turn-led-on')
 
 url=config.get('weatherstation', 'GOOGLE_SCRIPTS_WEATHER_URL')
 
