@@ -1,7 +1,7 @@
 [Unit]
 Description=MiniDLNA lightweight DLNA/UPnP-AV server
 Documentation=man:minidlnad(1) man:minidlna.conf(5)
-After=local-fs.target remote-fs.target autofs
+After=local-fs.target remote-fs.target autofs.service
 
 [Service]
 User=minidlna
