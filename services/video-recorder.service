@@ -1,0 +1,15 @@
+[Unit]
+Description=Records video through the Raspberry Pi camera
+After=local-fs.target
+
+[Service]
+Restart=always
+RestartSec=3
+PIDFile=/run/python_video-recorder.pid
+User=pi
+ExecStart=/home/pi/raspberry-pi-home-automation/.env/bin/python3 /home/pi/raspberry-pi-home-automation/video_recorder.py
+Type=simple
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target

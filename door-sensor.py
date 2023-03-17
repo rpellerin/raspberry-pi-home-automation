@@ -56,8 +56,6 @@ r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
 
 print("Listening to the door state change...")
 
-video_recording = None
-
 while True:
     oldIsOpen = isOpen
     isOpen = GPIO.input(DOOR_SENSOR_PIN)
@@ -67,9 +65,6 @@ while True:
         print("Door is currently " + door_status)
 
         r.publish('door_status', door_status)
-
-        if (isOpen) and ((video_recording == None) or (video_recording.returncode == None)):
-            video_recording = subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh"])
 
         utc_offset_in_hours = int(-time.timezone/3600)
         now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=utc_offset_in_hours))).strftime('%d/%m/%Y %H:%M:%S')
