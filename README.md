@@ -194,7 +194,7 @@ crontab -e
   > I bought a [switch cable from Amazon](http://a.co/d/2TyyK1D), connected it to the pins 5 and 6 (GROUND and GPIO 3) and followed this [tutorial](https://github.com/TonyLHansen/raspberry-pi-safe-off-switch/):
 
 ```bash
-sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev
+sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev python3-picamera2
 python3 -m venv --system-site-packages .env
 source .env/bin/activate
 pip3 install -r requirements.txt
