@@ -33,7 +33,7 @@ sudo rm /var/swap
 
 # Temperature
 
-Head over to [the `temperature/` folder](temperature/README.md).
+Head over to [report_weather.README.md](report_weather.README.md).
 
 # MiniDLNA
 
