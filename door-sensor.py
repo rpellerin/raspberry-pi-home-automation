@@ -9,7 +9,6 @@ import signal
 import redis
 import datetime
 import requests
-import subprocess
 import importlib
 
 config = importlib.import_module('config').get_config()

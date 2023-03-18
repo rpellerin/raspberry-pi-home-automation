@@ -7,6 +7,7 @@ import signal
 import sys
 import time
 import os
+import subprocess
 
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import CircularOutput
@@ -17,6 +18,8 @@ from libcamera import controls
 import cv2
 
 import turn_led
+
+fps=10
 
 thread = None
 pubsub = None
@@ -53,11 +56,13 @@ red = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
 
 size=(1280, 720)
 
-conf = picam2.create_video_configuration(main={"size": size, "format": "RGB888"}, transform=Transform(hflip=True,vflip=True), buffer_count=3, controls={"FrameRate": 10.0, "AfMode": controls.AfModeEnum.Continuous, "NoiseReductionMode": controls.draft.NoiseReductionModeEnum.Off})
+conf = picam2.create_video_configuration(main={"size": size, "format": "RGB888"}, transform=Transform(hflip=True,vflip=True), controls={"FrameRate": float(fps), "AfMode": controls.AfModeEnum.Continuous, "NoiseReductionMode": controls.draft.NoiseReductionModeEnum.Off})
 picam2.configure(conf)
 picam2.pre_callback = apply_timestamp
-encoder = H264Encoder(800_000_000, repeat=True)
-encoder.output = CircularOutput()
+one_mega_bits_per_second=1_000_000
+encoder = H264Encoder(one_mega_bits_per_second, repeat=True, framerate=float(fps), enable_sps_framerate=True)
+duration=5 # seconds
+encoder.output = CircularOutput(buffersize=int(fps * (duration + 0.2)))
 picam2.encoder = encoder
 picam2.start() # Start the cam only
 picam2.start_encoder()
@@ -70,16 +75,20 @@ def door_status_change(message):
       print('Door opened! Recording...')
       now = time.strftime("%Y-%m-%dT%H:%M:%S")
       filename = f'/tmp/{now}.h264'
+      filename_pts = f'/tmp/{now}.pts'
       encoder.output.fileoutput = filename
+      #encoder.output.ptsoutput = filename_pts
       encoder.output.start()
       time.sleep(15) # 15 seconds
       encoder.output.stop()
       turn_led.turn_off()
       print("Done recording")
-      os.system(f"ffmpeg -r 10 -i {filename} -vcodec copy {filename}.mp4")
-      #os.system(f"mkvmerge -o {filename}.mkv --timecodes "0:/tmp/$filename-timestamps.txt" "/tmp/$filename.h264"")
+      final_filename = f"{filename}.mp4"
+      os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
+      #os.system(f"sed -i '1i # timestamp format v2' {filename_pts}") # Adds the header
+      #os.system(f"mkvmerge -o {final_filename} --timecodes \"0:{filename_pts}\" {filename}")
       #os.system(f"rm {filename}")
-      os.system(f"echo \"On `date`\" | mail -s 'Door opened' -A \"{filename}.mp4\" root@localhost &")
+      subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh", final_filename])
       print('Ffmpeg done')
 
 if __name__ == "__main__":
