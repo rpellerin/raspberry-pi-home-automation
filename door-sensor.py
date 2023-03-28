@@ -7,7 +7,6 @@ import time
 import sys, os
 import signal
 import redis
-import datetime
 import requests
 import importlib
 
@@ -63,8 +62,7 @@ while True:
 
         r.publish('door_status', door_status)
 
-        utc_offset_in_hours = int(-time.timezone/3600)
-        now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=utc_offset_in_hours))).strftime('%d/%m/%Y %H:%M:%S')
+        now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
         data = { 'timestamp': now, 'door_status': door_status }
 
         successfully_sent = False
