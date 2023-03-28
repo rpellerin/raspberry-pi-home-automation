@@ -14,7 +14,6 @@ url=config.get('weatherstation', 'GOOGLE_SCRIPTS_WEATHER_URL')
 port = 1
 address = 0x76
 bus = smbus2.SMBus(port)
-utc_offset_in_hours = int(-time.timezone/3600)
 now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
 
 calibration_params = bme280.load_calibration_params(bus, address)
