@@ -1,5 +1,7 @@
 # Setting up the Raspberry Pi
 
+![GPIO pins](GPIO.png)
+
 Follow [a tutorial I have written](https://romainpellerin.eu/raspberry-pi-the-ultimate-guide.html) to set up the Pi. Do not set `max_usb_current=1` if the power supply cannot output more than 1A. When running `raspi-config`, make sure to:
 
 - Enable the camera. First make sure it works by running `libcamera-still -o test.jpg`.
