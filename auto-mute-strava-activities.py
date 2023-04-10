@@ -4,6 +4,9 @@ import sys
 import json
 import time
 
+# HOW TO USE:
+# 0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz path/raspberry-pi-home-automation/.env/bin/python path/raspberry-pi-home-automation/auto-mute-strava-activities.py
+
 # A token can be obtained by running this https://github.com/rpellerin/commute-auto-tagger/ with the credentials of
 # a Strava App, and logging in. Then, window.localStorage.getItem("refreshToken")
 REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
