@@ -3,6 +3,8 @@ import os
 import sys
 import json
 import time
+import threading
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 # HOW TO USE:
 # 0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz path/raspberry-pi-home-automation/.env/bin/python path/raspberry-pi-home-automation/auto-mute-strava-activities.py
@@ -13,9 +15,37 @@ REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
 CLIENT_ID = os.environ.get('CLIENT_ID')
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 
-if (REFRESH_TOKEN == None) or () or ():
+if (CLIENT_ID == None) or (CLIENT_SECRET == None):
     print('Please set REFRESH_TOKEN, CLIENT_ID and CLIENT_SECRET')
     sys.exit(1)
+
+class StoppableHTTPServer(HTTPServer):
+    def run(self):
+        try:
+            self.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            # Clean-up server (close socket, etc.)
+            self.server_close()
+
+if (REFRESH_TOKEN == None):
+    server = StoppableHTTPServer(('localhost', 8080), SimpleHTTPRequestHandler)
+    t = threading.Thread(target=server.run)
+    t.start()
+    print(f'Now visit https://www.strava.com/oauth/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri=http://localhost:8080/strava-logger.html%3Fclient_creds%3D{CLIENT_ID}_{CLIENT_SECRET}&approval_prompt=auto&scope=read,activity:read_all,activity:write')
+    try:
+        input('Hit Enter when done\n')
+    except KeyboardInterrupt:
+        server.shutdown()
+        print('Exiting')
+        t.join()
+        sys.exit(1)
+
+    server.shutdown()
+    t.join()
+    print('Now you know your refresh token. Relaunch this script with REFRESH_TOKEN=xyz as an env variable.')
+    sys.exit(0)
 
 epoch_time             = int(time.time())
 epoch_time_one_week_ago = epoch_time - (3600 * 24 * 7)

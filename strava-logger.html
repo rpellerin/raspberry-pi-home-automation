@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      const code = new URL(window.location.href).searchParams?.get("code");
+      const [client_id, client_secret] = new URL(
+        window.location.href
+      ).searchParams
+        ?.get("client_creds")
+        .split("_");
+      fetch("https://www.strava.com/api/v3/oauth/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id,
+          client_secret,
+          code,
+          grant_type: "authorization_code",
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.errors) {
+            window.alert(data.message);
+            return;
+          }
+          document.body.innerHTML += `userId: ${data.athlete.id}<br />`;
+          document.body.innerHTML += `refreshToken: ${data.refresh_token} (<b>COPY THIS</b>)<br />`;
+          document.body.innerHTML += `accessToken: ${data.access_token}<br />`;
+          document.body.innerHTML += `accessTokenExpiresAt: ${data.expires_at}<br />`;
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    </script>
+
+    <title>Strava logger</title>
+  </head>
+  <body></body>
+</html>
