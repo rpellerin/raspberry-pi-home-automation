@@ -132,6 +132,8 @@ If that does not work, use the file `services/motion.service` from this reposito
 crontab -e
 30 21 * * * /home/pi/raspberry-pi-home-automation/.env/bin/python /home/pi/raspberry-pi-home-automation/20h.py
 0 21 * * * find /var/lib/minidlna -type f -mtime +2 -exec rm '{}' \;
+0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -exec rm '{}' \;
+0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -exec rm '{}' \;
 ```
 
 ## Advanced features (from most important to least)
