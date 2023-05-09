@@ -200,12 +200,14 @@ sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-
 python3 -m venv --system-site-packages .env # --system-site-packages to have the system-install picamera2 module available
 source .env/bin/activate
 pip3 install -r requirements.txt
-sudo cp services/shutdown.service services/door-sensor.service /etc/systemd/system
+sudo cp services/shutdown.service services/door-sensor.service services/video-recorder.service /etc/systemd/system
 sudo systemctl enable shutdown.service
 sudo systemctl enable door-sensor.service
+sudo systemctl enable video-recorder.service
 sudo systemctl daemon-reload
 sudo systemctl start shutdown.service
 sudo systemctl start door-sensor.service
+sudo systemctl start video-recorder.service
 ```
 
 - _Must detect when no connectivity and be resiliant to it_
