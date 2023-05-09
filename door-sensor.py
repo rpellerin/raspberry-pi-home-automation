@@ -58,11 +58,11 @@ while True:
 
     if (isOpen != oldIsOpen):
         door_status = 'open' if isOpen else 'closed'
-        print("Door is currently " + door_status)
+        now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
+        print(now + ": door is currently " + door_status)
 
         r.publish('door_status', door_status)
 
-        now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
         data = { 'timestamp': now, 'door_status': door_status }
 
         successfully_sent = False

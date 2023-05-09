@@ -72,8 +72,9 @@ def door_status_change(message):
   print('Door status received:', door_status)
   if door_status == 'open':
       turn_led.turn_on()
-      print('Door opened! Recording...')
+      # subprocess.Popen(["/home/pi/raspberry-pi-home-automation/email-without-attachment.sh"])
       now = time.strftime("%Y-%m-%dT%H:%M:%S")
+      print(now + ': door opened! Recording...')
       filename = f'/tmp/{now}.h264'
       filename_pts = f'/tmp/{now}.pts'
       encoder.output.fileoutput = filename
@@ -82,13 +83,13 @@ def door_status_change(message):
       time.sleep(15) # 15 seconds
       encoder.output.stop()
       turn_led.turn_off()
-      print("Done recording")
+      print(time.strftime("%Y-%m-%dT%H:%M:%S") + ": done recording")
       final_filename = f"{filename}.mp4"
       os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
       #os.system(f"sed -i '1i # timestamp format v2' {filename_pts}") # Adds the header
       #os.system(f"mkvmerge -o {final_filename} --timecodes \"0:{filename_pts}\" {filename}")
       #os.system(f"rm {filename}")
-      subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh", final_filename])
+      # subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh", final_filename])
       print('Ffmpeg done')
 
 if __name__ == "__main__":
