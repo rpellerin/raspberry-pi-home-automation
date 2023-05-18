@@ -48,8 +48,6 @@ GPIO.setup(DOOR_SENSOR_PIN, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 # Set the cleanup handler for when user hits Ctrl-C to exit
 signal.signal(signal.SIGINT, cleanup)
 
-r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
-
 print("Listening to the door state change...")
 
 while True:
@@ -61,7 +59,9 @@ while True:
         now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
         print(now + ": door is currently " + door_status)
 
+        r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
         r.publish('door_status', door_status)
+        print('Status sent to Redis')
 
         data = { 'timestamp': now, 'door_status': door_status }
 
