@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import time
+import redis
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
@@ -15,7 +16,7 @@ CLIENT_ID = os.environ.get('CLIENT_ID')
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 
 if (CLIENT_ID == None) or (CLIENT_SECRET == None):
-    print('Please set REFRESH_TOKEN, CLIENT_ID and CLIENT_SECRET')
+    print('Please set CLIENT_ID and CLIENT_SECRET')
     sys.exit(1)
 
 class StoppableHTTPServer(HTTPServer):
@@ -71,7 +72,15 @@ r = requests.get(activities_url, headers=authenticated_headers)
 r.raise_for_status()
 activities = json.loads(r.text)
 
+REDIS_INSTANCE = redis.Redis()
+
 def should_be_muted(activity):
+    activity_id = activity["id"]
+
+    if (REDIS_INSTANCE.get(f'strava_activity_{activity_id}') != None):
+        print(f'Skipping activity {activity_id} as it was already processed')
+        return False
+
     sport_type = activity['sport_type']
     distance = activity['distance']
     hide_from_home = ('hide_from_home' in activity) and (activity['hide_from_home'])
@@ -83,9 +92,14 @@ def should_be_muted(activity):
 print(f'Received in total {len(activities)} activities')
 activites_to_mute = list(filter(should_be_muted, activities))
 
+EXPIRATION_IN_ONE_YEAR = 60 * 60 * 24 * 365
+
 for i, activity in enumerate(activites_to_mute):
-    print(f'Mutting {i+1:02d}/{len(activites_to_mute)} https://www.strava.com/activities/{activity["id"]}')
+    activity_id = activity["id"]
+    print(f'Muting {i+1:02d}/{len(activites_to_mute)} https://www.strava.com/activities/{activity_id}')
     payload = { 'hide_from_home': True }
-    activity_url = f'https://www.strava.com/api/v3/activities/{activity["id"]}'
+    activity_url = f'https://www.strava.com/api/v3/activities/{activity_id}'
     r = requests.put(activity_url, headers=authenticated_headers, data=json.dumps(payload))
     r.raise_for_status()
+    REDIS_INSTANCE.set(f'strava_activity_{activity_id}', 1, EXPIRATION_IN_ONE_YEAR)
+    print(f'Marked https://www.strava.com/activities/{activity_id} as processed')
