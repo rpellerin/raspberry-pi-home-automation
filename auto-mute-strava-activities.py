@@ -55,8 +55,12 @@ activities_url = f'https://www.strava.com/api/v3/athlete/activities?per_page=100
 
 json_headers = {"Content-Type": "application/json"}
 
+REDIS_INSTANCE = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
+
+SAVED_REFRESH_TOKEN = REDIS_INSTANCE.get(REFRESH_TOKEN)
+
 auth_payload = {
-        'refresh_token': REFRESH_TOKEN,
+        'refresh_token': (SAVED_REFRESH_TOKEN or REFRESH_TOKEN),
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
         'grant_type': "refresh_token",
@@ -64,15 +68,17 @@ auth_payload = {
 
 r = requests.post(auth_url, headers=json_headers, data=json.dumps(auth_payload))
 r.raise_for_status()
-ACCESS_TOKEN = json.loads(r.text)['access_token']
+response = json.loads(r.text)
+ACCESS_TOKEN = response['access_token']
+RECEIVED_REFRESH_TOKEN = response['refresh_token']
+
+REDIS_INSTANCE.set(REFRESH_TOKEN, RECEIVED_REFRESH_TOKEN)
 
 authenticated_headers = json_headers | { 'Authorization': f'Bearer {ACCESS_TOKEN}' }
 
 r = requests.get(activities_url, headers=authenticated_headers)
 r.raise_for_status()
 activities = json.loads(r.text)
-
-REDIS_INSTANCE = redis.Redis()
 
 def should_be_muted(activity):
     activity_id = activity["id"]
