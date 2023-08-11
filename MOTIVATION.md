@@ -24,8 +24,6 @@ Let's start off with listing the requirements for this project.
 - Must detect when no connectivity and be resiliant to it
 - Must notify me when someone logs in to the Raspberry Pi, either remotely or physically with a keyboard connected to it
 
-Now let's try to address these bullet points one by one. But first, the big picture.
-
 # Hardware
 
 For this project, I used an old Rasberry Pi 1 model B revision 2, an Ethernet cable and the [camera module version 2.1](https://www.kubii.fr/cameras-accessoires/1653-module-camera-v2-8mp-kubii-640522710881.html). You should consider buying the Pi NoIR camera with infrared LEDs to enable night vision (daylight pictures however look red-ish and bad quality).

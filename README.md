@@ -2,14 +2,29 @@
 
 ![GPIO pins](GPIO.png)
 
-Follow [a tutorial I have written](https://romainpellerin.eu/raspberry-pi-the-ultimate-guide.html) to set up the Pi. Do not set `max_usb_current=1` if the power supply cannot output more than 1A. When running `raspi-config`, make sure to:
+# Setup
+
+After installing a fresh version of Raspbian, and cloning this repo, follow [the beginning of a tutorial I have written](https://romainpellerin.eu/raspberry-pi-the-ultimate-guide.html) to set up the Pi. Do not set `max_usb_current=1` if the power supply cannot output more than 1A. When running `raspi-config`, make sure to:
 
 - Enable the camera. First make sure it works by running `libcamera-still -o test.jpg`.
 - Give the GPU at least 128MB (more is recommended, apparently)
 
 You can stop reading the tutorial at the end of the section "Configuration".
 
-## Fine tuning wthen using a SD card only (no external SDD)
+## Crontab
+
+```bash
+crontab -e
+0 21 * * * find /var/lib/minidlna -type f -mtime +2 -exec rm '{}' \;
+0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -exec rm '{}' \;
+0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -exec rm '{}' \;
+
+sudo su
+crontab -e
+@reboot /bin/sleep 20; /usr/sbin/exim -qff; echo "So you know... ($(/bin/date))\n\n$(/usr/bin/tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on 20secs ago" root
+```
+
+## Fine tuning when using a SD card only (no external SDD)
 
 ```bash
 sudo tune2fs -c -1 -i 0 /dev/mmcblk0p2 # no check when booting
@@ -43,166 +58,25 @@ Head over to [the `minidlna/` folder](minidlna/README.md).
 
 # Security camera (CCTV)
 
-Now has come the time to turn off the Raspberry Pi, unplug the power supply, ground yourself, and plug in the camera model in the CSI port (next to the HDMI one). The camera module is very vulnerable to static eletrictiy that's why we have to be that cautious.
-
-Then turn it back on and make sure it is correctly detected:
+Make sure the camera is correctly detected:
 
 ```bash
 sudo vcgencmd get_camera
 ```
 
-## Software for motion detection and video/image capture
-
-Now, we've got two options.
-
-1.  Build our own solution based on [Python scripts](https://picamera.readthedocs.io/). [I explained how I did it on my blog](https://romainpellerin.eu/raspberry-pi-noir-camera-module-and-ir-leds.html).
-2.  Use an existing software program.
-
-Regarding option 2, there are plenty of existing programs to do motion detection on a Raspberry Pi. The two most interesting ones I found are these two:
-
-- [Motion](https://github.com/Motion-Project/motion/)
-- [Raspberry PI-TIMOLO](https://github.com/pageauc/pi-timolo)
-
-The first one seems to be quite a big project, with a large community. On the other hand, the second one is more of a personal side-project and seems to be lacking features Motion has. So I decided to give Motion a try.
-
-Also note that Motion comes with a web frontend, [MotionEye](https://github.com/ccrisan/motioneye). Since our camera has no motor to rotate, I thought there was no need for a web interface with controls. If there ever was to be motion, I would get emails with pictures anyway. Therefore I did not install MotionEye.
-
-## Motion
-
-### Install
-
-Although installation through `apt` is possible, you will most likely get an outdated version of Motion. I decided to build it from their Github repo. [Here is the official turorial I followed](https://motion-project.github.io/motion_build.html#BUILD_DEBIAN). Make sure to also install `ffmpeg` with `apt` (only useful to make videos out of pictures though, but you'll probaly want to try this feature out).
-
-We want Motion to be able to send emails, so let's install Exim4 by reading the relevant section on [my tutorial here]({filename}/raspberry-pi-the-ultimate-guide.md). Or you might want to use a simpler solution with [`mpack`](https://www.bouvet.no/bouvet-deler/utbrudd/building-a-motion-activated-security-camera-with-the-raspberry-pi-zero).
-
-The configuration file I personally use when running Motion (`motion -c motion-dist.conf`) is here in this very repository.
-
-# Meeting the [initial requirements](MOTIVATION.md)
-
-Now that we just installed Motion, let's address the above-mentioned requirements one by one.
-
-## Basic features
-
-- _Must send good resolution pictures (and videos if need be) on motion detection_
-
-  > This is addressed in the configuration file above.
-
-- _Must be easily concealable (no LEDs visible, even at night)_
-
-  > Do your best to do this with duck tape, Blu Tack or something else.
-
-- _Must be easily turned on and started_
-
-  > I connected my Raspberry with an extension cord that has a switch. As to the auto start feature, here is how to do it:
-
-First, copy the SystemD file and enable the service:
-
-```bash
-sudo cp motion/data/motion.service /etc/systemd/system/
-sudo systemctl enable motion.service
-```
-
-Add these two lines below `[Service]` and edit the third line:
-
-```text
-Restart=always
-RestartSec=3
-ExecStart=/usr/local/bin/motion -n -c /home/pi/raspberry-pi-home-automation/motion-dist.conf
-```
-
-Replace the existing line `ExecStart` with the one above. `-n` is to force non-daemon mode.
-
-Then run:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl start motion
-sudo systemctl status motion
-```
-
-If that does not work, use the file `services/motion.service` from this repository, after cloning this repository in your home folder.
-
-- _Must be able to live stream to the Internet if I want to_
-
-  > Addressed in the configuration file above. Make sure to open ports to the Internet in your router configuration.
-
-## Download the latest French news
-
-```bash
-crontab -e
-30 21 * * * /home/pi/raspberry-pi-home-automation/.env/bin/python /home/pi/raspberry-pi-home-automation/20h.py
-0 21 * * * find /var/lib/minidlna -type f -mtime +2 -exec rm '{}' \;
-0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -exec rm '{}' \;
-0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -exec rm '{}' \;
-```
-
-## Advanced features (from most important to least)
-
-- _Must no fail because of the SD card_
-
-  > This one can be addressed by using an [external HDD](https://www.kubii.fr/carte-sd-et-stockage/1790-disque-dur-pidrive-foundation-edition-kubii-718037846736.html) for the root partition instead of a SD card.
-
-- _Not easily hackable (penetrable) through my LAN or the Internet_
-
-  > Quite simple. Disable Wifi when the security camera is on. Also, don't expose it to the Internet (don't allow ports to be reached through your router). This disables live streaming but strengthens security.
-
-- _Must send daily signs of life as a proof no one took it down on purpose or my apartment did not burn down_
-
-  > For this one, we are going to create a cron that runs daily and send an email. See bullet point below.
-
-- _Must free up space when it runs out of disk space_
-
-  > A good solution would be to create a script that runs every 30mins thanks to cron, check for space left. If too little, it zips all the pictures and videos just in case you did not get them, email it to you and then delete the zip and the original files. Please see the file `alive-script.sh` in this repository. Then run `crontab -e` as `pi` and:
-
-  ```bash
-  # Sends out an email saying hi and returns
-  0    12 * * * /home/pi/raspberry-pi-home-automation/alive-script.sh --daily
-  # Checks for remaining space left, delete pics and vids if necessary
-  */30 *  * * * /home/pi/raspberry-pi-home-automation/alive-script.sh
-  # Deletes all pics and vids created more than 30 days ago
-  0 11 * * * find /home/pi/pics_and_vids/ -type f -mtime +30 -exec rm '{}' \;
-  ```
-
-- _Must notify me when being turned on and tell me how long it had been off_
-
-  > Shoud be easy.
-
-  Add a cronjob that runs at every reboot, sleeps for 20 secs (in case network is not immediately available) and sends an email:
-
-  ```bash
-  sudo su
-  crontab -e
-  @reboot /bin/sleep 20; /usr/sbin/exim -qff; echo "So you know... ($(/bin/date))\n\n$(/usr/bin/tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on 20secs ago" root
-  ```
-
-  ***
-
-  _Old method: add the following in /etc/rc.local, right above `exit 0`:_
-
-  ```bash
-  sleep 20
-  echo -e "So you know... ($(/bin/date))\n\n$(/usr/bin/tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on 20secs ago" root
-  exit 0
-  ```
-
-- _Must be resiliant to power outage, and auto-restart. Must also handle cases when network is not available_
-
-  > Auto start was addressed a few lines above. However, how to wait for network to be up? [TODO](https://www.raspberrypi.org/forums/viewtopic.php?t=187225) and [TODO](https://www.raspberrypi.org/forums/viewtopic.php?p=1054207#p1054207).
-
-- _Must notify me when being purposedly shut down_
-
-  > [This question on StackOverflow](https://unix.stackexchange.com/questions/39226/how-to-run-a-script-with-systemd-right-before-shutdown) and [this tutorial](https://opensource.com/life/16/11/running-commands-shutdown-linux) should help though.
-
-- _Must be easily shut down when I get home (through a physical button ideally)_
-
-  > I bought a [switch cable from Amazon](http://a.co/d/2TyyK1D), connected it to the pins 5 and 6 (GROUND and GPIO 3) and followed this [tutorial](https://github.com/TonyLHansen/raspberry-pi-safe-off-switch/):
+## Setup
 
 ```bash
 sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev python3-picamera2 python3-opencv
-python3 -m venv --system-site-packages .env # --system-site-packages to have the system-install picamera2 module available
+
+cd /to/the/cloned/repo
+
+python3 -m venv --system-site-packages .env # --system-site-packages to have the system-installed picamera2 module available
 source .env/bin/activate
 pip3 install -r requirements.txt
+
 sudo cp services/shutdown.service services/door-sensor.service services/video-recorder.service /etc/systemd/system
+
 sudo systemctl enable shutdown.service
 sudo systemctl enable door-sensor.service
 sudo systemctl enable video-recorder.service
@@ -211,16 +85,6 @@ sudo systemctl start shutdown.service
 sudo systemctl start door-sensor.service
 sudo systemctl start video-recorder.service
 ```
-
-- _Must detect when no connectivity and be resiliant to it_
-
-  > Yet to do...
-
-- _Must notify me when someone logs in to the Raspberry Pi, either remotely or physically with a keyboard connected to it_
-
-  > Yet to do...
-
-Hope this helps.
 
 # Further reading
 

@@ -3,6 +3,9 @@ import re
 import yt_dlp
 from bs4 import BeautifulSoup
 
+# crontab -e
+# 30 21 * * * /home/pi/raspberry-pi-home-automation/.env/bin/python /home/pi/raspberry-pi-home-automation/20h.py
+
 url = "https://www.france.tv/france-2/journal-20h00/"
 
 html_text = requests.get(url).text
