@@ -18,11 +18,52 @@ crontab -e
 0 21 * * * find /var/lib/minidlna -type f -mtime +2 -exec rm '{}' \;
 0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -exec rm '{}' \;
 0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -exec rm '{}' \;
+0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.env/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
 
 sudo su
 crontab -e
 @reboot /bin/sleep 20; /usr/sbin/exim -qff; echo "So you know... ($(/bin/date))\n\n$(/usr/bin/tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on 20secs ago" root
 ```
+
+## Rest of the setup
+
+Now make sure the camera is correctly detected:
+
+```bash
+sudo vcgencmd get_camera
+```
+
+```bash
+sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev python3-picamera2 python3-opencv
+
+cd /to/the/cloned/repo
+
+python3 -m venv --system-site-packages .env # --system-site-packages to have the system-installed picamera2 module available
+source .env/bin/activate
+pip3 install -r requirements.txt
+
+sudo cp services/minidlna.service services/shutdown.service services/door-sensor.service services/video-recorder.service /etc/systemd/system
+
+sudo systemctl enable minidlna.service
+sudo systemctl enable shutdown.service
+sudo systemctl enable door-sensor.service
+sudo systemctl enable video-recorder.service
+sudo systemctl daemon-reload
+sudo systemctl start minidlna.service
+sudo systemctl start shutdown.service
+sudo systemctl start door-sensor.service
+sudo systemctl start video-recorder.service
+```
+
+# Temperature, humidity, pressure
+
+Head over to [report_weather.README.md](report_weather.README.md).
+
+# MiniDLNA
+
+Head over to [the `minidlna/` folder](minidlna/README.md).
+
+# Further reading
 
 ## Fine tuning when using a SD card only (no external SDD)
 
@@ -48,45 +89,7 @@ sudo apt remove dphys-swapfile # Permanently
 sudo rm /var/swap
 ```
 
-# Temperature
-
-Head over to [report_weather.README.md](report_weather.README.md).
-
-# MiniDLNA
-
-Head over to [the `minidlna/` folder](minidlna/README.md).
-
-# Security camera (CCTV)
-
-Make sure the camera is correctly detected:
-
-```bash
-sudo vcgencmd get_camera
-```
-
-## Setup
-
-```bash
-sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev python3-picamera2 python3-opencv
-
-cd /to/the/cloned/repo
-
-python3 -m venv --system-site-packages .env # --system-site-packages to have the system-installed picamera2 module available
-source .env/bin/activate
-pip3 install -r requirements.txt
-
-sudo cp services/shutdown.service services/door-sensor.service services/video-recorder.service /etc/systemd/system
-
-sudo systemctl enable shutdown.service
-sudo systemctl enable door-sensor.service
-sudo systemctl enable video-recorder.service
-sudo systemctl daemon-reload
-sudo systemctl start shutdown.service
-sudo systemctl start door-sensor.service
-sudo systemctl start video-recorder.service
-```
-
-# Further reading
+## Links
 
 - [Smarten up your Pi Zero Web Camera with Image Analysis and Amazon Web Services (Part 1)](https://www.bouvet.no/bouvet-deler/utbrudd/smarten-up-your-pi-zero-web-camera-with-image-analysis-and-amazon-web-services-part-1)
 - [Limit the runtime of a cronjob or script](https://ma.ttias.be/limit-runtime-cronjob-script/)

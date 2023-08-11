@@ -45,5 +45,7 @@ sudo vim /etc/minidlna.conf
 
 # Now copy the service from this repo and start it
 sudo cp services/minidlna.service /etc/systemd/system
-sudo systemctl minidlna start
+sudo systemctl enable minidlna.service
+sudo systemctl daemon-reload
+sudo systemctl start minidlna.service
 ```
