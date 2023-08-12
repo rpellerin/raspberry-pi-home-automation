@@ -19,6 +19,7 @@ crontab -e
 0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -exec rm '{}' \;
 0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -exec rm '{}' \;
 0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.env/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
+*/3 * * * * /path/to/raspberry-pi-home-automation/.env/bin/python /path/to/raspberry-pi-home-automation/report_weather.py
 
 sudo su
 crontab -e
