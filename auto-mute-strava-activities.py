@@ -5,15 +5,18 @@ import json
 import time
 import redis
 import threading
+from geopy import distance
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 # HOW TO USE:
-# 0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.env/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
+# 0 */1 * * * DRY_RUN=0 COMMUTE_IF_CLOSE_TO="40.987,20.123" CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.env/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
 
 # A token can be obtained by running this script without the `REFRESH_TOKEN`` env variable.
 REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
 CLIENT_ID = os.environ.get('CLIENT_ID')
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
+COMMUTE_IF_CLOSE_TO = os.environ.get('COMMUTE_IF_CLOSE_TO')
+DRY_RUN = bool(int(os.environ.get('DRY_RUN') or "1"))
 
 if (CLIENT_ID == None) or (CLIENT_SECRET == None):
     print('Please set CLIENT_ID and CLIENT_SECRET')
@@ -80,13 +83,16 @@ r = requests.get(activities_url, headers=authenticated_headers)
 r.raise_for_status()
 activities = json.loads(r.text)
 
-def should_be_muted(activity):
+def was_not_yet_processed(activity):
     activity_id = activity["id"]
 
     if (REDIS_INSTANCE.get(f'strava_activity_{activity_id}') != None):
         print(f'Skipping activity {activity_id} as it was already processed')
         return False
 
+    return True
+
+def should_be_muted(activity):
     sport_type = activity['sport_type']
     distance = activity['distance']
     hide_from_home = ('hide_from_home' in activity) and (activity['hide_from_home'])
@@ -94,18 +100,51 @@ def should_be_muted(activity):
 
     return ((sport_type == "Walk") or (sport_type == "Ride" and distance < 10_000.0)) and (not hide_from_home)
 
+MAXIMUM_DISTANCE_IN_KM = 0.5
+OFFICE_POINT = (COMMUTE_IF_CLOSE_TO != None) and tuple([float(s.strip()) for s in COMMUTE_IF_CLOSE_TO.split(',')])
+
+def is_close_to_office(activity):
+    activity_start_point = tuple(activity['start_latlng'])
+    activity_end_point = tuple(activity['end_latlng'])
+
+    kms_to_start_point = distance.distance(OFFICE_POINT, activity_start_point).km
+    kms_to_end_point = distance.distance(OFFICE_POINT, activity_end_point).km
+
+    return (kms_to_start_point <= MAXIMUM_DISTANCE_IN_KM) or (kms_to_end_point <= MAXIMUM_DISTANCE_IN_KM)
+
+def should_be_marked_as_commute(activity):
+    if COMMUTE_IF_CLOSE_TO == None:
+        print(f"COMMUTE_IF_CLOSE_TO not provided, cannot evaluate activity {activity['id']}")
+        return False
+
+    sport_type = activity['sport_type']
+    distance = activity['distance']
+
+    return (sport_type == "Ride" and distance < 10_000.0) and (is_close_to_office(activity))
+
+
 # sport_type, distance, hide_from_home
 print(f'Received in total {len(activities)} activities')
-activites_to_mute = list(filter(should_be_muted, activities))
+activities_non_processed = list(filter(was_not_yet_processed, activities))
+
+activites_to_mute = list(filter(should_be_muted, activities_non_processed))
+activites_to_mark_as_commute = list(filter(should_be_marked_as_commute, activities_non_processed))
 
 EXPIRATION_IN_ONE_YEAR = 60 * 60 * 24 * 365
 
-for i, activity in enumerate(activites_to_mute):
-    activity_id = activity["id"]
-    print(f'Muting {i+1:02d}/{len(activites_to_mute)} https://www.strava.com/activities/{activity_id}')
-    payload = { 'hide_from_home': True }
-    activity_url = f'https://www.strava.com/api/v3/activities/{activity_id}'
-    r = requests.put(activity_url, headers=authenticated_headers, data=json.dumps(payload))
-    r.raise_for_status()
-    REDIS_INSTANCE.set(f'strava_activity_{activity_id}', 1, EXPIRATION_IN_ONE_YEAR)
-    print(f'Marked https://www.strava.com/activities/{activity_id} as processed')
+def process_activities(activities, payload, log_message):
+    for i, activity in enumerate(activities):
+        activity_id = activity["id"]
+        print(f'{i+1:02d}/{len(activities)}: https://www.strava.com/activities/{activity_id} marked as {log_message}')
+
+        if not DRY_RUN:
+            activity_url = f'https://www.strava.com/api/v3/activities/{activity_id}'
+            r = requests.put(activity_url, headers=authenticated_headers, data=json.dumps(payload))
+            r.raise_for_status()
+            REDIS_INSTANCE.set(f'strava_activity_{activity_id}', 1, EXPIRATION_IN_ONE_YEAR)
+            print(f'Marked https://www.strava.com/activities/{activity_id} as processed')
+        else:
+            print('Dry run. No effect.')
+
+process_activities(activites_to_mute, { 'hide_from_home': True }, "hidden")
+process_activities(activites_to_mark_as_commute, { 'commute': True }, "commute")

@@ -1,5 +1,6 @@
 certifi==2023.7.22
 chardet==3.0.4
+geopy==2.4.0
 gpiozero==1.6.2
 idna==2.10
 redis==4.5.4
