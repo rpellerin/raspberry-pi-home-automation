@@ -8,6 +8,12 @@
 
    const MAX_ROW_NUMBER = 39500;
 
+   function getShouldSendEmails() {
+     const sheet =
+       SpreadsheetApp.openById(sheetId).getSheetByName("Door status");
+     return sheet.getRange("F1").getValue();
+   }
+
    function doGet(e) {
      const result = JSON.stringify(e); // assume success
 
@@ -34,6 +40,9 @@
            case "door_status":
              rowData[5] = value;
              break;
+           case "get_should_send_emails":
+             result = getShouldSendEmails();
+             return ContentService.createTextOutput(result);
            default:
              result = "failed";
              return ContentService.createTextOutput(result);
