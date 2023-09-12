@@ -67,29 +67,30 @@ picam2.encoder = encoder
 picam2.start() # Start the cam only
 picam2.start_encoder()
 
+def should_send_emails():
+  return red.get('should_send_emails') == '1'
+
 def door_status_change(message):
   door_status = message['data']
   print('Door status received:', door_status)
   if door_status == 'open':
       turn_led.turn_on()
-      # subprocess.Popen(["/home/pi/raspberry-pi-home-automation/email-without-attachment.sh"])
+      send_email = should_send_emails()
+
+      if send_email: subprocess.Popen(["/home/pi/raspberry-pi-home-automation/email-without-attachment.sh"])
+
       now = time.strftime("%Y-%m-%dT%H:%M:%S")
       print(now + ': door opened! Recording...')
       filename = f'/tmp/{now}.h264'
-      filename_pts = f'/tmp/{now}.pts'
       encoder.output.fileoutput = filename
-      #encoder.output.ptsoutput = filename_pts
       encoder.output.start()
-      time.sleep(15) # 15 seconds
+      time.sleep(15) # 15 seconds of video
       encoder.output.stop()
       turn_led.turn_off()
       print(time.strftime("%Y-%m-%dT%H:%M:%S") + ": done recording")
       final_filename = f"{filename}.mp4"
       os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
-      #os.system(f"sed -i '1i # timestamp format v2' {filename_pts}") # Adds the header
-      #os.system(f"mkvmerge -o {final_filename} --timecodes \"0:{filename_pts}\" {filename}")
-      #os.system(f"rm {filename}")
-      # subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh", final_filename])
+      if send_email: subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh", final_filename])
       print('Ffmpeg done')
 
 if __name__ == "__main__":
