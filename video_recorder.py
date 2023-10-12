@@ -19,6 +19,9 @@ import cv2
 
 import turn_led
 
+REPO_PATH = os.path.join(os.path.dirname(__file__))
+SEND_EMAIL_SCRIPT_PATH = os.path.join(REPO_PATH, 'send-email.sh')
+
 fps=10
 
 thread = None
@@ -74,23 +77,47 @@ def door_status_change(message):
   door_status = message['data']
   print('Door status received:', door_status)
   if door_status == 'open':
-      turn_led.turn_on()
+      now = time.strftime("%Y-%m-%dT%H:%M:%S")
+
       send_email = should_send_emails()
 
-      if send_email: subprocess.Popen(["/home/pi/raspberry-pi-home-automation/email-without-attachment.sh"])
+      if send_email:
+        # subprocess.Popen is non blocking
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door just opened!"])
 
-      now = time.strftime("%Y-%m-%dT%H:%M:%S")
+      turn_led.turn_on()
+
+      photo1 = f"/tmp/{now}-1.jpg"
+      picam2.capture_file(photo1)
+      if send_email:
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 1", photo1])
+
       print(now + ': door opened! Recording...')
       filename = f'/tmp/{now}.h264'
       encoder.output.fileoutput = filename
       encoder.output.start()
-      time.sleep(15) # 15 seconds of video
+
+      time.sleep(5) # 5 seconds of video this far
+      photo2 = f"/tmp/{now}-2.jpg"
+      picam2.capture_file(photo2)
+      if send_email:
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 2", photo2])
+
+      time.sleep(5) # 10 seconds of video this far
+      photo3 = f"/tmp/{now}-3.jpg"
+      picam2.capture_file(photo3)
+      if send_email:
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 3", photo3])
+
+      time.sleep(5) # 15 seconds of video this far
+
       encoder.output.stop()
       turn_led.turn_off()
       print(time.strftime("%Y-%m-%dT%H:%M:%S") + ": done recording")
       final_filename = f"{filename}.mp4"
       os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
-      if send_email: subprocess.Popen(["/home/pi/raspberry-pi-home-automation/video-to-email.sh", final_filename])
+      if send_email:
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - video", final_filename])
       print('Ffmpeg done')
 
 if __name__ == "__main__":
@@ -99,4 +126,5 @@ if __name__ == "__main__":
   pubsub = red.pubsub()
   pubsub.subscribe(**{'door_status': door_status_change})
   thread = pubsub.run_in_thread(sleep_time=0.001)
+  print(f"Script is located in {REPO_PATH}")
   print("Awaiting order to record video...")
