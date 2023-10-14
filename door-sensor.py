@@ -41,15 +41,28 @@ def send_request(data):
     except requests.exceptions.RequestException:
         return False
 
-def post_to_google_scripts(data, isOpen, r):
+def post_to_google_scripts(data, isOpen, r, last_thread):
+    if last_thread != None:
+        if last_thread.is_alive():
+            logging.info("Waiting on previous call to Google Scripts to complete...")
+        else:
+            logging.info("Previous call to Google Scripts already complete")
+
+        last_thread.join()
+
+    logging.info("Sending to Google Scripts...")
+
     successfully_sent = False
     try:
         successfully_sent = send_request(data)
     except BaseException as e:
         logging.error("Error: %s" % str(e))
 
+    if successfully_sent:
+        logging.info(f'Successfully posted to Google Scripts {data}')
+
     if not successfully_sent:
-        logging.warning('Failed to post to Google App Script')
+        logging.warning('Failed to post to Google Scripts')
         logging.warning(data)
         r.rpush('door_status', str(data))
         if (isOpen):
@@ -68,6 +81,7 @@ logging.info("Listening to the door state change...")
 # Initially we don't know if the door sensor is open or closed...
 isOpen = None
 oldIsOpen = None
+last_thread = None
 
 while True:
     oldIsOpen = isOpen
@@ -84,7 +98,7 @@ while True:
 
         data = { 'timestamp': now, 'door_status': door_status }
 
-        x = threading.Thread(target=post_to_google_scripts, args=[data, isOpen, r])
-        x.start()
+        last_thread = threading.Thread(target=post_to_google_scripts, args=[data, isOpen, r, last_thread])
+        last_thread.start()
 
     time.sleep(0.1)
