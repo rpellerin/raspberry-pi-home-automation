@@ -11,6 +11,7 @@ import requests
 import importlib
 import threading
 import logging
+from timeit import default_timer as timer
 
 CONFIG = importlib.import_module('config').get_config()
 GOOGLE_SCRIPTS_WEATHER_URL=CONFIG.get('weatherstation', 'GOOGLE_SCRIPTS_WEATHER_URL')
@@ -83,16 +84,22 @@ isOpen = None
 oldIsOpen = None
 last_thread = None
 
+r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
+
+REEMIT_AFTER_SECONDS = 15.0
+start_time = None
+
 while True:
     oldIsOpen = isOpen
     isOpen = GPIO.input(DOOR_SENSOR_PIN)
 
     if (isOpen != oldIsOpen):
+        start_time = timer()
+
         door_status = 'open' if isOpen else 'closed'
         now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
         logging.info("Door is currently " + door_status)
 
-        r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
         r.publish('door_status', door_status)
         logging.info('Status sent to Redis')
 
@@ -100,5 +107,11 @@ while True:
 
         last_thread = threading.Thread(target=post_to_google_scripts, args=[data, isOpen, r, last_thread])
         last_thread.start()
+
+    if (isOpen) and (isOpen == oldIsOpen):
+        if ((timer() - start_time) >= REEMIT_AFTER_SECONDS):
+            start_time = timer()
+            r.publish('door_status', 'open')
+            logging.info('Re-emitted status (open) to Redis')
 
     time.sleep(0.1)
