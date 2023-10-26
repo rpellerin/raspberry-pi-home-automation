@@ -1,13 +1,14 @@
+beautifulsoup4==4.11.2
 certifi==2023.7.22
 chardet==3.0.4
 geopy==2.4.0
 gpiozero==1.6.2
 idna==2.10
+pyserial==3.5
 redis==4.5.4
 requests==2.31.0
 RPi.bme280==0.2.4
 RPi.GPIO==0.7.1
 smbus2==0.4.0
 urllib3==1.26.18
-beautifulsoup4==4.11.2
 yt-dlp==2023.9.24
