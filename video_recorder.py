@@ -7,6 +7,7 @@ import signal
 import sys
 import time
 import os
+import logging
 import subprocess
 
 from picamera2.encoders import H264Encoder
@@ -21,6 +22,9 @@ import turn_led
 
 REPO_PATH = os.path.join(os.path.dirname(__file__))
 SEND_EMAIL_SCRIPT_PATH = os.path.join(REPO_PATH, 'send-email.sh')
+
+format_logs = "%(asctime)s: %(message)s"
+logging.basicConfig(stream=sys.stdout, format=format_logs, level=logging.INFO)
 
 fps=10
 
@@ -42,8 +46,8 @@ def apply_timestamp(request):
         cv2.putText(m.array, timestamp, origin, font, scale, colour, thickness)
 
 def signal_handler(sig, frame):
-    print('You pressed Ctrl+C!')
-    print('Gracefully exiting...')
+    logging.info('You pressed Ctrl+C!')
+    logging.info('Gracefully exiting...')
     if (thread != None):
       thread.stop()
       thread.join(timeout=1.0)
@@ -51,9 +55,9 @@ def signal_handler(sig, frame):
 
     turn_led.cleanup()
     picam2.stop_encoder()
-    print('Encoder stopped')
+    logging.info('Encoder stopped')
     picam2.stop()
-    print('Camera stoppped')
+    logging.info('Camera stoppped')
 
 red = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
 
@@ -75,7 +79,7 @@ def alarm_state():
 
 def door_status_change(message):
   door_status = message['data']
-  print('Door status received:', door_status)
+  logging.info('Door status received:' + door_status)
   if door_status == 'open':
       now = time.strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -92,7 +96,7 @@ def door_status_change(message):
       if alarm_enabled:
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 1", photo1])
 
-      print(now + ': door opened! Recording...')
+      logging.info('Door opened! Recording...')
       filename = f'/tmp/{now}.h264'
       encoder.output.fileoutput = filename
       encoder.output.start()
@@ -113,12 +117,12 @@ def door_status_change(message):
 
       encoder.output.stop()
       turn_led.turn_off()
-      print(time.strftime("%Y-%m-%dT%H:%M:%S") + ": done recording")
+      logging.info("Done recording")
       final_filename = f"{filename}.mp4"
       os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
       if alarm_enabled:
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - video", final_filename])
-      print('Ffmpeg done')
+      logging.info('Ffmpeg done')
 
 if __name__ == "__main__":
   signal.signal(signal.SIGINT, signal_handler)
@@ -126,5 +130,5 @@ if __name__ == "__main__":
   pubsub = red.pubsub()
   pubsub.subscribe(**{'door_status': door_status_change})
   thread = pubsub.run_in_thread(sleep_time=0.001)
-  print(f"Script is located in {REPO_PATH}")
-  print("Awaiting order to record video...")
+  logging.info(f"Script is located in {REPO_PATH}")
+  logging.info("Awaiting order to record video...")
