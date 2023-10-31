@@ -17,12 +17,17 @@ def send_request():
         return None
 
 
-r = redis.Redis()
+r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
 success = False
 
 try:
     success, response = send_request()
-    r.set('should_send_emails', '1' if (success and response == 'yes') else '0')
+    new_alarm_state = '1' if (success and response == 'yes') else '0'
+    alarm_state_from_server = r.get('alarm_state_from_server')
+
+    if alarm_state_from_server != new_alarm_state:
+        r.set('alarm_state_from_server', new_alarm_state)
+        r.set('alarm_state', new_alarm_state)
 except BaseException as e:
     print("Error: %s" % str(e))
 

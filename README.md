@@ -16,6 +16,7 @@ You can stop reading the tutorial at the end of the section "Configuration".
 ```bash
 crontab -e
 0 21 * * * find /var/lib/minidlna -type f -mtime +2 -exec rm '{}' \;
+0 21 * * * find /var/lib/minidlna -type d -mtime +2 -exec rm '{}' -rf \;
 0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -exec rm '{}' \;
 0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -exec rm '{}' \;
 0 21 * * * find /tmp -type f -iname '*.jpg' -mtime +90 -exec rm '{}' \;

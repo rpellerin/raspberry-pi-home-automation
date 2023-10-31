@@ -70,8 +70,8 @@ picam2.encoder = encoder
 picam2.start() # Start the cam only
 picam2.start_encoder()
 
-def should_send_emails():
-  return red.get('should_send_emails') == '1'
+def alarm_state():
+  return red.get('alarm_state') == '1'
 
 def door_status_change(message):
   door_status = message['data']
@@ -79,9 +79,9 @@ def door_status_change(message):
   if door_status == 'open':
       now = time.strftime("%Y-%m-%dT%H:%M:%S")
 
-      send_email = should_send_emails()
+      alarm_enabled = alarm_state()
 
-      if send_email:
+      if alarm_enabled:
         # subprocess.Popen is non blocking
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door just opened!"])
 
@@ -89,7 +89,7 @@ def door_status_change(message):
 
       photo1 = f"/tmp/{now}-1.jpg"
       picam2.capture_file(photo1)
-      if send_email:
+      if alarm_enabled:
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 1", photo1])
 
       print(now + ': door opened! Recording...')
@@ -100,13 +100,13 @@ def door_status_change(message):
       time.sleep(5) # 5 seconds of video this far
       photo2 = f"/tmp/{now}-2.jpg"
       picam2.capture_file(photo2)
-      if send_email:
+      if alarm_enabled:
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 2", photo2])
 
       time.sleep(5) # 10 seconds of video this far
       photo3 = f"/tmp/{now}-3.jpg"
       picam2.capture_file(photo3)
-      if send_email:
+      if alarm_enabled:
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 3", photo3])
 
       time.sleep(5) # 15 seconds of video this far
@@ -116,7 +116,7 @@ def door_status_change(message):
       print(time.strftime("%Y-%m-%dT%H:%M:%S") + ": done recording")
       final_filename = f"{filename}.mp4"
       os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
-      if send_email:
+      if alarm_enabled:
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - video", final_filename])
       print('Ffmpeg done')
 

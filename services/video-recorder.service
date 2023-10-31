@@ -9,8 +9,8 @@ PIDFile=/run/python_video-recorder.pid
 User=pi
 ExecStart=/home/pi/raspberry-pi-home-automation/.env/bin/python3 -u /home/pi/raspberry-pi-home-automation/video_recorder.py
 Type=simple
-StandardOutput=file:/var/log/video-recorder.stdout
-StandardError=file:/var/log/video-recorder.stderr
+StandardOutput=append:/var/log/video-recorder.stdout
+StandardError=append:/var/log/video-recorder.stderr
 
 [Install]
 WantedBy=multi-user.target
