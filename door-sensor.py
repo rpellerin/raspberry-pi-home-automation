@@ -104,12 +104,12 @@ while True:
 
         door_status = 'open' if isOpen else 'closed'
         message = f"{door_status} (was {oldIsOpen})"
-        now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
         logging.info("Door is currently " + message)
 
         r.publish('door_status', door_status)
         logging.info('Status sent to Redis')
 
+        now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
         data = { 'timestamp': now, 'door_status': message }
 
         last_thread = threading.Thread(target=post_to_google_scripts, args=[data, r, last_thread])
@@ -142,6 +142,7 @@ while True:
                 logging.info(logs_message)
                 latest_alarm_state = new_alarm_state
 
+                now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
                 data = { 'timestamp': now, 'door_status': logs_message }
                 last_thread = threading.Thread(target=post_to_google_scripts, args=[data, r, last_thread])
                 last_thread.start()
