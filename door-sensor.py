@@ -131,10 +131,11 @@ while True:
             if new_alarm_state != latest_alarm_state:
                 if (message == 'ON pressed'):
                     logs_message = 'ON'
-                    set_alarm_at_time = int(time.time() + 30)
+                    set_alarm_at_time = int(time.time()) + 30
                 else:
                     logs_message = 'OFF'
                     set_alarm_at_time = None
+                    logging.info('REDIS: Set alarm_state to 0')
                     r.set('alarm_state', '0')
 
                 logs_message = f"ALARM {logs_message} (was {latest_alarm_state})"
@@ -147,8 +148,9 @@ while True:
                 last_thread = threading.Thread(target=post_to_google_scripts, args=[data, r, last_thread])
                 last_thread.start()
 
-        if (set_alarm_at_time != None) and (int(time.time()) > set_alarm_at_time):
-            set_alarm_at_time = None
-            r.set('alarm_state', '1')
+    if (set_alarm_at_time != None) and (int(time.time()) > set_alarm_at_time):
+        logging.info('REDIS: Set alarm_state to 1')
+        set_alarm_at_time = None
+        r.set('alarm_state', '1')
 
     time.sleep(0.1)
