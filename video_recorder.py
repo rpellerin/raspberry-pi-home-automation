@@ -101,7 +101,7 @@ def door_status_change(message):
       photo1 = f"/tmp/{now}-1.jpg"
       picam2.capture_file(photo1)
       if alarm_enabled:
-        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 1", photo1])
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Alarm - photo 1", photo1])
 
       logging.info('Recording...')
       filename = f'/tmp/{now}.h264'
@@ -112,13 +112,13 @@ def door_status_change(message):
       photo2 = f"/tmp/{now}-2.jpg"
       picam2.capture_file(photo2)
       if alarm_enabled:
-        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 2", photo2])
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Alarm - photo 2", photo2])
 
       time.sleep(5) # 10 seconds of video this far
       photo3 = f"/tmp/{now}-3.jpg"
       picam2.capture_file(photo3)
       if alarm_enabled:
-        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 3", photo3])
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Alarm - photo 3", photo3])
 
       time.sleep(5) # 15 seconds of video this far
 
@@ -128,7 +128,7 @@ def door_status_change(message):
       final_filename = f"{filename}.mp4"
       os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
       if alarm_enabled:
-        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - video", final_filename])
+        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Alarm - video", final_filename])
       logging.info('Ffmpeg done')
 
 if __name__ == "__main__":
