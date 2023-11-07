@@ -79,7 +79,7 @@ def alarm_state():
 
 def door_status_change(message):
   door_status = message['data']
-  logging.info('Door status received:' + door_status)
+  logging.info('Door status received: ' + door_status)
   if door_status == 'open' or door_status == 'still_open' or door_status == 'motion':
       now = time.strftime("%Y-%m-%dT%H:%M:%S")
 
