@@ -80,14 +80,21 @@ def alarm_state():
 def door_status_change(message):
   door_status = message['data']
   logging.info('Door status received:' + door_status)
-  if door_status == 'open':
+  if door_status == 'open' or door_status == 'still_open' or door_status == 'motion':
       now = time.strftime("%Y-%m-%dT%H:%M:%S")
 
       alarm_enabled = alarm_state()
 
       if alarm_enabled:
         # subprocess.Popen is non blocking
-        subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door just opened!"])
+        if door_status == 'open':
+          subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door just opened!"])
+        elif door_status == 'still_open':
+          subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door still open"])
+        elif door_status == 'motion':
+          subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Motion detected"])
+        else:
+          subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, f"Alert! Received: {door_status}"])
 
       turn_led.turn_on()
 
@@ -96,7 +103,7 @@ def door_status_change(message):
       if alarm_enabled:
         subprocess.Popen([SEND_EMAIL_SCRIPT_PATH, "Door opened - photo 1", photo1])
 
-      logging.info('Door opened! Recording...')
+      logging.info('Recording...')
       filename = f'/tmp/{now}.h264'
       encoder.output.fileoutput = filename
       encoder.output.start()

@@ -89,11 +89,17 @@ oldIsOpen = None
 last_thread = None
 
 r = redis.Redis('localhost', 6379, charset="utf-8", decode_responses=True)
-latest_alarm_state = r.get('alarm_state') or 'unknown'
+current_or_future_alarm_state = r.get('alarm_state') or 'unknown'
+actual_current_alarm_state = current_or_future_alarm_state
 set_alarm_at_time = None
+
+ALARM_ARMED    = '1'
+ALARM_DISARMED = '0'
 
 REEMIT_AFTER_SECONDS = 15.0
 start_time = None
+last_motion_detected_at = None
+logging.info(f"Current alarm state: {actual_current_alarm_state}")
 
 while True:
     oldIsOpen = isOpen
@@ -118,30 +124,50 @@ while True:
     if (isOpen) and (isOpen == oldIsOpen):
         if ((timer() - start_time) >= REEMIT_AFTER_SECONDS):
             start_time = timer()
-            r.publish('door_status', 'open')
-            logging.info('Re-emitted status (open) to Redis')
+            r.publish('door_status', 'still_open')
+            logging.info('Re-emitted status (still_open) to Redis')
 
     if (arduino.in_waiting > 0):
         message = arduino.readline().decode('utf-8').rstrip()
-        logging.info(f"Receveid from Arduino: {message}")
+
+        if (message == 'Motion detected') and (actual_current_alarm_state == ALARM_ARMED):
+            # We detected motion, and alarm is armed
+            # If the alarm is not armed, we ignore motion detection, cause that would happen all the time
+
+            now_in_seconds = int(time.time())
+
+            if (last_motion_detected_at == None) or ((last_motion_detected_at + int(REEMIT_AFTER_SECONDS)) < now_in_seconds):
+                # We detected motion for the first time, or it's been more than 15 secondes since the last initial detection
+                last_motion_detected_at = now_in_seconds
+                logging.info(f"Received from Arduino: {message}")
+
+                # Let's raise the alarm only if the door is not already open
+                if not isOpen:
+                    now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
+                    data = { 'timestamp': now, 'door_status': 'motion detected' }
+                    last_thread = threading.Thread(target=post_to_google_scripts, args=[data, r, last_thread])
+                    last_thread.start()
+                    r.publish('door_status', 'motion')
 
         if message == 'ON pressed' or message == 'OFF pressed':
-            new_alarm_state = '1' if (message == 'ON pressed') else '0'
+            logging.info(f"Received from Arduino: {message}")
+            new_alarm_state = ALARM_ARMED if (message == 'ON pressed') else ALARM_DISARMED
 
-            if new_alarm_state != latest_alarm_state:
+            if new_alarm_state != current_or_future_alarm_state:
                 if (message == 'ON pressed'):
                     logs_message = 'ON'
                     set_alarm_at_time = int(time.time()) + 30
                 else:
                     logs_message = 'OFF'
                     set_alarm_at_time = None
-                    logging.info('REDIS: Set alarm_state to 0')
-                    r.set('alarm_state', '0')
+                    logging.info(f'REDIS: Set alarm_state to {ALARM_DISARMED}')
+                    actual_current_alarm_state = ALARM_DISARMED
+                    r.set('alarm_state', ALARM_DISARMED)
 
-                logs_message = f"ALARM {logs_message} (was {latest_alarm_state})"
+                logs_message = f"ALARM {logs_message} (was {current_or_future_alarm_state})"
 
                 logging.info(logs_message)
-                latest_alarm_state = new_alarm_state
+                current_or_future_alarm_state = new_alarm_state
 
                 now = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
                 data = { 'timestamp': now, 'door_status': logs_message }
@@ -149,8 +175,9 @@ while True:
                 last_thread.start()
 
     if (set_alarm_at_time != None) and (int(time.time()) > set_alarm_at_time):
-        logging.info('REDIS: Set alarm_state to 1')
+        logging.info(f'REDIS: Set alarm_state to {ALARM_ARMED}')
         set_alarm_at_time = None
-        r.set('alarm_state', '1')
+        actual_current_alarm_state = ALARM_ARMED
+        r.set('alarm_state', ALARM_ARMED)
 
     time.sleep(0.1)
