@@ -11,4 +11,4 @@ RPi.bme280==0.2.4
 RPi.GPIO==0.7.1
 smbus2==0.4.0
 urllib3==1.26.18
-yt-dlp==2023.9.24
+yt-dlp==2023.11.14
