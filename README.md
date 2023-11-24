@@ -23,6 +23,7 @@ crontab -e
 0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
 */3 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/report_weather.py
 */5 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
+*/6 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
 
 sudo su
 crontab -e

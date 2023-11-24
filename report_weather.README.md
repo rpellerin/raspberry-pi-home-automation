@@ -14,6 +14,15 @@
      return sheet.getRange("F1").getValue();
    }
 
+   function getShouldReboot() {
+     const sheet =
+       SpreadsheetApp.openById(sheetId).getSheetByName("Door status");
+     const cell = sheet.getRange("F2");
+     const value = cell.getValue();
+     cell.setValue("");
+     return value;
+   }
+
    function doGet(e) {
      const result = JSON.stringify(e); // assume success
 
@@ -42,6 +51,9 @@
              break;
            case "get_should_send_emails":
              result = getShouldSendEmails();
+             return ContentService.createTextOutput(result);
+           case "get_should_reboot":
+             result = getShouldReboot();
              return ContentService.createTextOutput(result);
            default:
              result = "failed";
