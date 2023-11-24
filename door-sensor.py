@@ -47,7 +47,13 @@ def send_request(data):
         )
         return response.status_code == 200
     except requests.exceptions.RequestException:
+        logging.error("RequestException!")
         return False
+    except BaseException as error:
+        logging.error("BaseException!")
+        logging.error(error)
+        return False
+
 
 def post_to_google_scripts(data, r, last_thread):
     if last_thread != None:
@@ -56,7 +62,11 @@ def post_to_google_scripts(data, r, last_thread):
         else:
             logging.info("Previous call to Google Scripts already complete")
 
-        last_thread.join()
+        last_thread.join(30)
+        if last_thread.is_alive():
+            logging.info(
+                "Previous call's thread still alive. Ignoring and proceeding..."
+            )
 
     logging.info("Sending to Google Scripts...")
 
