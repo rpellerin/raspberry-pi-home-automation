@@ -9,7 +9,7 @@ from geopy import distance
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 # HOW TO USE:
-# 0 */1 * * * DRY_RUN=0 COMMUTE_IF_CLOSE_TO="40.987,20.123" CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.env/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
+# 0 */1 * * * DRY_RUN=0 COMMUTE_IF_CLOSE_TO="40.987,20.123" CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
 
 # A token can be obtained by running this script without the `REFRESH_TOKEN`` env variable.
 REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')

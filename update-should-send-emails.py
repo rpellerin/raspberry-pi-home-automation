@@ -3,7 +3,7 @@ import redis
 import importlib
 
 # HOW TO USE:
-# */5 * * * * /path/to/raspberry-pi-home-automation/.env/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
+# */5 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
 
 config = importlib.import_module('config').get_config()
 

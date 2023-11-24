@@ -1,4 +1,5 @@
 # Python virtual environment
 .env/
+.pyenv/
 __pycache__/
 config.txt
