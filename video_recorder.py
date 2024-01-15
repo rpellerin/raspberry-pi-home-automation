@@ -138,4 +138,5 @@ if __name__ == "__main__":
   pubsub.subscribe(**{'door_status': door_status_change})
   thread = pubsub.run_in_thread(sleep_time=0.001)
   logging.info(f"Script is located in {REPO_PATH}")
+  logging.info(subprocess.check_output("df -h", shell=True).decode("utf-8"))
   logging.info("Awaiting order to record video...")
