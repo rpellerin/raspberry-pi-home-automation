@@ -98,7 +98,7 @@ def should_be_muted(activity):
     hide_from_home = ('hide_from_home' in activity) and (activity['hide_from_home'])
     # at the moment, `hide_from_home` is never present, even when true, while the doc says it should be there...
 
-    return ((sport_type == "Walk") or (sport_type == "Ride" and distance < 10_000.0)) and (not hide_from_home)
+    return ((sport_type == "Walk") or (sport_type == "Ride" and distance < 10_000.0) or (sport_type == 'Run' and distance < 10_000.0)) and (not hide_from_home)
 
 MAXIMUM_DISTANCE_IN_KM = 0.5
 OFFICE_POINT = (COMMUTE_IF_CLOSE_TO != None) and tuple([float(s.strip()) for s in COMMUTE_IF_CLOSE_TO.split(',')])
