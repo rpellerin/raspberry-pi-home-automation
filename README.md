@@ -105,3 +105,4 @@ sudo rm /var/swap
 - [Multiple cameras with the Raspberry Pi and OpenCV](https://pyimagesearch.com/2016/01/18/multiple-cameras-with-the-raspberry-pi-and-opencv/)
 - [Making my own NVR — with a streaming proxy and FFmpeg](https://blog.cavelab.dev/2024/01/diy-nvr-ffmpeg/)
 - [Making a manual security alarm in Home Assistant](https://blog.cavelab.dev/2021/11/home-assistant-manual-alarm/)
+- [Raspberry Pi security alarm — the basics](https://blog.cavelab.dev/2022/12/rpi-security-alarm/)
