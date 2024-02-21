@@ -16,3 +16,7 @@ hot_temp=23
 
 [weatherstation]
 GOOGLE_SCRIPTS_WEATHER_URL="https://script.google.com/macros/s/XYZ/exec'
+
+[pushover]
+PUSHOVER_USER=
+PUSHOVER_TOKEN=
