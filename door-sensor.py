@@ -89,7 +89,6 @@ def post_to_google_scripts(data, r, last_thread):
     if not successfully_sent:
         logging.warning("Failed to post to Google Scripts")
         logging.warning(data)
-        r.rpush("door_status", str(data))
         os.system(
             f'echo "{str(data)}" | mail -s "Failed to post to Google." root@localhost'
         )
