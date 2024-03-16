@@ -41,6 +41,22 @@ void playOffSound() {
   digitalWrite(BUZZER, LOW);
 }
 
+void soundAlarm() {
+  digitalWrite(BUZZER, HIGH);
+  delay(100);
+  digitalWrite(BUZZER, LOW);
+}
+
+int alarmLoopsCount = -1;
+
+void startAlarm() {
+  alarmLoopsCount = 0;
+}
+
+void stopAlarm() {
+  alarmLoopsCount = -1;
+}
+
 void readInputFromRaspberryPi() {
   if (Serial.available() > 0) {
     String data = Serial.readStringUntil('\n');
@@ -51,11 +67,39 @@ void readInputFromRaspberryPi() {
     if (data == "play_off_sound") {
       playOffSound();
     }
+    if (data == "start_alarm") {
+      startAlarm();
+    }
+    if (data == "stop_alarm") {
+      stopAlarm();
+    }
+  }
+}
+
+bool shouldSoundAlarm() {
+  if (alarmLoopsCount >= 0) {
+    alarmLoopsCount = alarmLoopsCount + 1;
+
+    if (alarmLoopsCount > 60) {
+      // It's been 9 secondes (60 loops of 150ms (100ms @line 46 + 50ms @line 130))
+      alarmLoopsCount = -1;
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+  else {
+    return false;
   }
 }
 
 void loop() {
   readInputFromRaspberryPi();
+
+  if(shouldSoundAlarm()) {
+    soundAlarm();
+  }
 
   if (mySwitch.available()) { // If we received a RF signal
     int value = mySwitch.getReceivedValue();
