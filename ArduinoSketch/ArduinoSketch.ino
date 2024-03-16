@@ -41,6 +41,11 @@ void playOffSound() {
   digitalWrite(BUZZER, LOW);
 }
 
+// We do not want to systematically send detected motion to the Raspberry Pi, when the alarm is disengaged, because
+// otherwise we would send too many "Motion detected" events to the Raspberry Pi, and the Pi would take time to process
+// them all, delaying the processing of other events such as "ON pressed" or "OFF pressed".
+bool shouldReportDetectedMotion = true;
+
 void readInputFromRaspberryPi() {
   if (Serial.available() > 0) {
     String data = Serial.readStringUntil('\n');
@@ -48,8 +53,12 @@ void readInputFromRaspberryPi() {
     if (data == "play_on_sound") {
       playOnSound();
     }
-    if (data == "play_off_sound") {
+    if (data == "disarm_alarm") {
       playOffSound();
+      shouldReportDetectedMotion = false;
+    }
+    if (data == "arm_alarm") {
+      shouldReportDetectedMotion = true;
     }
   }
 }
@@ -76,7 +85,7 @@ void loop() {
     // Serial.println("No message received");
   }
 
-  if (digitalRead(PIR_MOTION_SENSOR)) {
+  if (digitalRead(PIR_MOTION_SENSOR) && shouldReportDetectedMotion) {
     Serial.println("Motion detected");
   }
   else {

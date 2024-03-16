@@ -188,7 +188,7 @@ while True:
                     logs_message = "ON"
                     set_alarm_at_time = int(time.time()) + 30
                 else:
-                    arduino.write("play_off_sound\n".encode("utf-8"))
+                    arduino.write("disarm_alarm\n".encode("utf-8"))
                     logs_message = "OFF"
                     set_alarm_at_time = None
                     logging.info(f"REDIS: Set alarm_state to {ALARM_DISARMED}")
@@ -214,5 +214,6 @@ while True:
         set_alarm_at_time = None
         actual_current_alarm_state = ALARM_ARMED
         r.set("alarm_state", ALARM_ARMED)
+        arduino.write("arm_alarm\n".encode("utf-8"))
 
     time.sleep(0.1)
