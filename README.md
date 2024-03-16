@@ -49,6 +49,8 @@ python3 -m venv --system-site-packages .pyenv # --system-site-packages to have t
 source .pyenv/bin/activate
 pip3 install -r requirements.txt
 
+./build-arduino-sketch-and-deploy.py
+
 sudo cp services/minidlna.service services/shutdown.service services/door-sensor.service services/video-recorder.service /etc/systemd/system
 
 sudo systemctl enable minidlna.service

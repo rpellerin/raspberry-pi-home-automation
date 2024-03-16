@@ -15,8 +15,8 @@ RCSwitch mySwitch = RCSwitch();
 #define PIR_MOTION_SENSOR 3
 #define BUZZER 4
 
-#define ON_SIGNAL 123
-#define OFF_SIGNAL 321
+#define ON_SIGNAL ---REPLACE_ME---
+#define OFF_SIGNAL ---REPLACE_ME---
 
 void setup() {
   Serial.begin(9600); // To enable writing logs. As a side effect, this allows communication with the Raspberry Pi.
