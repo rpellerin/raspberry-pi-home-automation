@@ -32,6 +32,9 @@ arduino = serial.Serial(
 # to avoid receiving weird/not useful/not complete data at the beginning of the communication.
 arduino.reset_input_buffer()
 
+# Same for the output buffer
+arduino.reset_output_buffer()
+
 
 # Clean up when the user exits with keyboard interrupt
 def cleanup(signal, frame):
@@ -182,9 +185,11 @@ while True:
 
             if new_alarm_state != current_or_future_alarm_state:
                 if message == "ON pressed":
+                    arduino.write("play_on_sound\n".encode("utf-8"))
                     logs_message = "ON"
                     set_alarm_at_time = int(time.time()) + 30
                 else:
+                    arduino.write("play_off_sound\n".encode("utf-8"))
                     logs_message = "OFF"
                     set_alarm_at_time = None
                     logging.info(f"REDIS: Set alarm_state to {ALARM_DISARMED}")
