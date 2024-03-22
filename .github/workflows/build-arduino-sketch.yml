@@ -1,0 +1,47 @@
+name: Build Arduino Sketch
+
+on: [push, pull_request, workflow_dispatch]
+
+# This is the list of jobs that will be run concurrently.
+# Since we use a build matrix, the actual number of jobs
+# started depends on how many configurations the matrix
+# will produce.
+jobs:
+  compile-sketch:
+    strategy:
+      matrix:
+        # Ours is `arduino:renesas_uno:unor4wifi`
+        # We test 2 others just because why not...
+        arduino-platform: ["arduino:samd", "arduino:avr", "arduino:renesas_uno"]
+        # This is usually optional but we need to statically define the
+        # FQBN of the boards we want to test for each platform. In the
+        # future the CLI might automatically detect and download the core
+        # needed to compile against a certain FQBN, at that point the
+        # following `include` section will be useless.
+        include:
+          - arduino-platform: "arduino:samd"
+            fqbn: "arduino:samd:nano_33_iot"
+          - arduino-platform: "arduino:avr"
+            fqbn: "arduino:avr:unowifi"
+          - arduino-platform: "arduino:renesas_uno"
+            fqbn: "arduino:renesas_uno:unor4wifi"
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+      - name: Install platform and libraries
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install ${{ matrix.arduino-platform }}
+          arduino-cli lib install rc-switch
+      - name: Prepare Sketch
+        run: |
+          sed -i '/#define ON_SIGNAL ---REPLACE_ME---/c\#define ON_SIGNAL 123' ./ArduinoSketch/ArduinoSketch.ino
+          sed -i '/#define OFF_SIGNAL ---REPLACE_ME---/c\#define OFF_SIGNAL 321' ./ArduinoSketch/ArduinoSketch.ino
+          cat ./ArduinoSketch/ArduinoSketch.ino
+      - name: Compile Sketch
+        run: |
+          arduino-cli compile --fqbn ${{ matrix.fqbn }} ./ArduinoSketch

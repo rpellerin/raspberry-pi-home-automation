@@ -26,7 +26,7 @@ with tempfile.TemporaryDirectory() as destination_directory, open(
     f"{destination_directory}/{os.path.basename(destination_directory)}.ino", "x"
 ) as destination_file:
     replace_in_file(
-        f"{SCRIPT_DIRECTORY}/ArduinoSketch/ArduinoSketch.ino",
+        f"{SCRIPT_DIRECTORY}/../ArduinoSketch/ArduinoSketch.ino",
         [
             ("#define ON_SIGNAL ---REPLACE_ME---", f"#define ON_SIGNAL {ON_SIGNAL}"),
             ("#define OFF_SIGNAL ---REPLACE_ME---", f"#define OFF_SIGNAL {OFF_SIGNAL}"),
