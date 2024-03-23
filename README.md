@@ -20,10 +20,10 @@ crontab -e
 0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -delete
 0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -delete
 0 21 * * * find /tmp -type f -iname '*.jpg' -mtime +90 -delete
-0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
-*/3 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/report_weather.py
-*/5 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
-*/6 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
+0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
+*/3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/report_weather.py
+*/5 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
+*/6 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
 15 22 * * * /home/pi/.local/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
 0 21 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
 
@@ -45,8 +45,8 @@ sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-
 
 cd /to/the/cloned/repo
 
-python3 -m venv --system-site-packages .pyenv # --system-site-packages to have the system-installed picamera2 module available
-source .pyenv/bin/activate
+python3 -m venv --system-site-packages .venv # --system-site-packages to have the system-installed picamera2 module available
+source .venv/bin/activate
 pip3 install -r requirements.txt
 
 ./build-arduino-sketch-and-deploy.py

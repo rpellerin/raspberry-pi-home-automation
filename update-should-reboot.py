@@ -3,7 +3,7 @@ import importlib
 import os
 
 # HOW TO USE:
-# */6 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
+# */6 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
 
 config = importlib.import_module("config").get_config()
 

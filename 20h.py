@@ -1,4 +1,4 @@
-#!/bin/env -S sh -c '"`dirname $0`/.env/bin/python3" "$0" "$@"'
+#!/bin/env -S sh -c '"`dirname $0`/.venv/bin/python3" "$0" "$@"'
 
 import requests
 import re

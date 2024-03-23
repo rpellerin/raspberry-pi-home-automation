@@ -93,12 +93,12 @@
 
    ```bash
    sudo apt install redis-server
-   python3 -m venv .pyenv
-   source .pyenv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    pip3 install -r requirements.txt
 
    ```
 
 1. In `weatherstation.py`, change the URL for your valid Google Script URL.
 1. Run `sudo raspi-config`, in `3 Interface Options`, enable `I2C`.
-1. Create a cronjob: `*/3 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/temperature/weatherstation.py`
+1. Create a cronjob: `*/3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/temperature/weatherstation.py`

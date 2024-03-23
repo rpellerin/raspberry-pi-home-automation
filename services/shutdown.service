@@ -6,7 +6,7 @@ After=local-fs.target network-online.target
 Restart=always
 RestartSec=3
 PIDFile=/run/python_shutdown.pid
-ExecStart=/home/pi/raspberry-pi-home-automation/.pyenv/bin/python3 -u /home/pi/raspberry-pi-home-automation/shutdown.py
+ExecStart=/home/pi/raspberry-pi-home-automation/.venv/bin/python3 -u /home/pi/raspberry-pi-home-automation/shutdown.py
 Type=simple
 StandardError=null
 
