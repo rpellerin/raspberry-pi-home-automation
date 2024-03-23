@@ -12,6 +12,8 @@ url = config.get("weatherstation", "GOOGLE_SCRIPTS_WEATHER_URL")
 
 def send_request():
     try:
+        # TODO: this endpoint should retrieve the value but also erase it from the server,
+        # like update-should-reboot does.
         response = requests.get(url, params={"get_should_send_emails": "1"})
         return (response.status_code == 200, response.text)
     except requests.exceptions.RequestException:
