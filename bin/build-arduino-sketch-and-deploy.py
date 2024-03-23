@@ -1,7 +1,7 @@
 #!/bin/env python3
 
 import tempfile
-import os, sys
+import os
 import importlib
 
 CONFIG = importlib.import_module("config").get_config()
