@@ -10,19 +10,13 @@ jobs:
   compile-sketch:
     strategy:
       matrix:
-        # Ours is `arduino:renesas_uno:unor4wifi`
-        # We test 2 others just because why not...
-        arduino-platform: ["arduino:samd", "arduino:avr", "arduino:renesas_uno"]
+        arduino-platform: ["arduino:renesas_uno"]
         # This is usually optional but we need to statically define the
         # FQBN of the boards we want to test for each platform. In the
         # future the CLI might automatically detect and download the core
         # needed to compile against a certain FQBN, at that point the
         # following `include` section will be useless.
         include:
-          - arduino-platform: "arduino:samd"
-            fqbn: "arduino:samd:nano_33_iot"
-          - arduino-platform: "arduino:avr"
-            fqbn: "arduino:avr:unowifi"
           - arduino-platform: "arduino:renesas_uno"
             fqbn: "arduino:renesas_uno:unor4wifi"
 
