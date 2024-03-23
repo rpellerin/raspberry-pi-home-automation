@@ -1,8 +1,8 @@
-#!/bin/env -S sh -c '"`dirname $0`/../.venv/bin/python3" "$0" "$@"'
+#!/bin/env -S sh -c '"`dirname $0`/.venv/bin/python3" "$0" "$@"'
 
 # This script can be invoked in two different ways with the same result:
-# $ /path/to/raspberry-pi-home-automation/bin/report_weather.py (thanks to the complex shebang above)
-# $ /path/to/raspberry-pi-home-automation/.venv/bin/python3 /path/to/raspberry-pi-home-automation/bin/report_weather.py
+# $ /path/to/raspberry-pi-home-automation/report_weather.py (thanks to the complex shebang above)
+# $ /path/to/raspberry-pi-home-automation/.venv/bin/python3 /path/to/raspberry-pi-home-automation/report_weather.py
 
 import smbus2
 import bme280

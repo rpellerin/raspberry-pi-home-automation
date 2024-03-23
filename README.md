@@ -26,7 +26,7 @@ crontab -e
 0 */1 * * * DRY_RUN=0 COMMUTE_IF_CLOSE_TO="40.987,20.123" CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
 
 # Periodic reporting of temperature
-*/3 * * * * /path/to/raspberry-pi-home-automation/bin/report_weather.py
+*/3 * * * * /path/to/raspberry-pi-home-automation/report_weather.py
 
 # Remote control of the Raspberry Pi. TODO: merge the two files?
 */5 * * * * /path/to/raspberry-pi-home-automation/update-should-send-emails.py
