@@ -24,7 +24,7 @@ crontab -e
 */3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/report_weather.py
 */5 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
 */6 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
-15 22 * * * /home/pi/.local/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
+15 22 * * * /path/to/raspberry-pi-home-automation/.venv/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
 0 21 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
 
 sudo su
