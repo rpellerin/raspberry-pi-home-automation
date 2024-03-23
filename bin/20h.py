@@ -1,12 +1,16 @@
 #!/bin/env -S sh -c '"`dirname $0`/.venv/bin/python3" "$0" "$@"'
 
+# This script can be invoked in two different ways with the same result:
+# $ /path/to/raspberry-pi-home-automation/bin/20h.py
+# $ /path/to/raspberry-pi-home-automation/.venv/bin/python3 /path/to/raspberry-pi-home-automation/bin/20h.py
+
 import requests
 import re
 import yt_dlp
 from bs4 import BeautifulSoup
 
 # crontab -e
-# 30 21 * * * /path/to/raspberry-pi-home-automation/20h.py
+# 30 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
 
 url = "https://www.france.tv/france-2/journal-20h00/"
 
