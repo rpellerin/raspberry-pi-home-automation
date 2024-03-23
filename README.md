@@ -42,6 +42,7 @@ sudo vcgencmd get_camera
 
 ```bash
 sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev python3-picamera2 python3-opencv
+# TODO: remove python3-opencv, not needed anymore? Same for python3-picamera, replaced by python3-picamera2?
 
 cd /to/the/cloned/repo
 
