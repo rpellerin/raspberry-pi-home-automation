@@ -10,5 +10,5 @@ requests==2.31.0
 RPi.bme280==0.2.4
 RPi.GPIO==0.7.1
 smbus2==0.4.3
-urllib3==1.26.18
+urllib3==2.2.1
 yt-dlp==2024.03.10
