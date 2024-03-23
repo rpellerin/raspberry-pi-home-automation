@@ -1,7 +1,7 @@
 beautifulsoup4==4.12.3
 certifi==2023.7.22
 chardet==3.0.4
-geopy==2.4.0
+geopy==2.4.1
 gpiozero==1.6.2
 idna==2.10
 pyserial==3.5
