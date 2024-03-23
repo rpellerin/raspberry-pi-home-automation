@@ -2,7 +2,7 @@ import requests
 import importlib
 import os
 
-# HOW TO USE:
+# HOW TO USE WITH CRON:
 # */6 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
 
 config = importlib.import_module("config").get_config()

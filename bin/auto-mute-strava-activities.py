@@ -1,3 +1,9 @@
+#!/bin/env -S sh -c '"`dirname $0`/../.venv/bin/python3" "$0" "$@"'
+
+# This script can be invoked in two different ways with the same result:
+# $ /path/to/raspberry-pi-home-automation/bin/auto-mute-strava-activities.py (thanks to the complex shebang above)
+# $ /path/to/raspberry-pi-home-automation/.venv/bin/python3 /path/to/raspberry-pi-home-automation/bin/auto-mute-strava-activities.py
+
 import requests
 import os
 import sys
@@ -8,8 +14,8 @@ import threading
 from geopy import distance
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-# HOW TO USE:
-# 0 */1 * * * DRY_RUN=0 COMMUTE_IF_CLOSE_TO="40.987,20.123" CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
+# HOW TO USE WITH CRON:
+# 0 */1 * * * DRY_RUN=0 COMMUTE_IF_CLOSE_TO="40.987,20.123" CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/bin/auto-mute-strava-activities.py
 
 # A token can be obtained by running this script without the `REFRESH_TOKEN`` env variable.
 REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")

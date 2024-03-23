@@ -2,7 +2,7 @@ import requests
 import redis
 import importlib
 
-# HOW TO USE:
+# HOW TO USE WITH CRON:
 # */5 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
 
 config = importlib.import_module("config").get_config()
