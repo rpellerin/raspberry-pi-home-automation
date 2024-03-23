@@ -15,17 +15,28 @@ You can stop reading the tutorial at the end of the section "Configuration".
 
 ```bash
 crontab -e
+# Daily cleaning of /var/lib/minidlna and /tmp (videos and pictures from the webcam). Durations are in days (`mtime`).
 0 21 * * * find /var/lib/minidlna -type f -mtime +2 -delete
 0 21 * * * find /var/lib/minidlna -type d -mtime +2 -empty -delete
 0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -delete
 0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -delete
 0 21 * * * find /tmp -type f -iname '*.jpg' -mtime +90 -delete
+
+# Periodic update of Strava activities
 0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
+
+# Periodic reporting of temperature
 */3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/report_weather.py
+
+# Remote control of the Raspberry Pi. TODO: merge the two files?
 */5 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
 */6 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
+
+# French and German news. There are antislashes before the % signs, cause % signs have a special meaning for cron.
+05 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
 15 22 * * * /path/to/raspberry-pi-home-automation/.venv/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
-0 21 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
+# Removing the subtitles file from German news
+30 22 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
 
 sudo su
 crontab -e
