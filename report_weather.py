@@ -38,20 +38,21 @@ def send_request(data):
         return False
 
 
-raw_data = bme280.sample(bus, address, calibration_params)
-data = { 'timestamp': now, 'temperature': raw_data.temperature, 'humidity': raw_data.humidity, 'pressure': raw_data.pressure }
+if __name__ == '__main__':
+    raw_data = bme280.sample(bus, address, calibration_params)
+    data = { 'timestamp': now, 'temperature': raw_data.temperature, 'humidity': raw_data.humidity, 'pressure': raw_data.pressure }
 
-r = redis.Redis()
-r.lpush('weather_reports', json.dumps(data))
-r.ltrim('weather_reports', 0, 9999) # No more than 10,000 elements stored in Redis
+    r = redis.Redis()
+    r.lpush('weather_reports', json.dumps(data))
+    r.ltrim('weather_reports', 0, 9999) # No more than 10,000 elements stored in Redis
 
-successfully_sent = False
+    successfully_sent = False
 
-try:
-    successfully_sent = send_request(data)
-except BaseException as e:
-    print("Error: %s" % str(e))
+    try:
+        successfully_sent = send_request(data)
+    except BaseException as e:
+        print("Error: %s" % str(e))
 
-if not successfully_sent:
-    print('Failed to post to Google App Script')
-    print(data)
+    if not successfully_sent:
+        print('Failed to post to Google App Script')
+        print(data)
