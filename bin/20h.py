@@ -1,4 +1,4 @@
-#!/bin/env -S sh -c '"`dirname $0`/.venv/bin/python3" "$0" "$@"'
+#!/bin/env -S sh -c '"`dirname $0`/../.venv/bin/python3" "$0" "$@"'
 
 # This script can be invoked in two different ways with the same result:
 # $ /path/to/raspberry-pi-home-automation/bin/20h.py
