@@ -1,6 +1,6 @@
 import time
 import os
-import cv2
+import cv2 # python3-opencv
 from picamera2 import MappedArray, Picamera2
 from picamera2.encoders import H264Encoder
 
