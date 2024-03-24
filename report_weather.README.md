@@ -8,19 +8,25 @@
 
    const MAX_ROW_NUMBER = 39500;
 
-   function getShouldSendEmails() {
+   function getRemoteControl(currentValue = "") {
      const sheet =
        SpreadsheetApp.openById(sheetId).getSheetByName("Door status");
-     return sheet.getRange("F1").getValue();
-   }
 
-   function getShouldReboot() {
-     const sheet =
-       SpreadsheetApp.openById(sheetId).getSheetByName("Door status");
-     const cell = sheet.getRange("F2");
-     const value = cell.getValue();
-     cell.setValue("");
-     return value;
+     const shouldEnableAlarmCell = sheet.getRange("F1");
+     const shouldEnableAlarm = shouldEnableAlarmCell.getValue().toLowerCase();
+     if (shouldEnableAlarm !== "") shouldEnableAlarmCell.setValue("");
+
+     sheet
+       .getRange("F5")
+       .setValue(
+         currentValue !== "" ? currentValue : "unknown (value not received)"
+       );
+
+     const shouldRebootCell = sheet.getRange("F2");
+     const shouldReboot = shouldRebootCell.getValue().toLowerCase();
+     if (shouldReboot !== "") shouldRebootCell.setValue("");
+
+     return JSON.stringify({ shouldEnableAlarm, shouldReboot });
    }
 
    function doGet(e) {
@@ -49,11 +55,8 @@
            case "door_status":
              rowData[5] = value;
              break;
-           case "get_should_send_emails":
-             result = getShouldSendEmails();
-             return ContentService.createTextOutput(result);
-           case "get_should_reboot":
-             result = getShouldReboot();
+           case "remote_control":
+             result = getRemoteControl(value);
              return ContentService.createTextOutput(result);
            default:
              result = "failed";
@@ -86,7 +89,6 @@
 
    ```bash
    curl -L https://script.google.com/macros/s/XYZ/exec\?temperature\=20\&humidity\=50
-
    ```
 
 1. On the Raspberry Pi, close this repo, install redis and set up the Python env from the root of this repo:

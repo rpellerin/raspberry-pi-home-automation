@@ -3,6 +3,7 @@
 import tempfile
 import os
 import importlib
+import sys
 
 CONFIG = importlib.import_module("config").get_config()
 ON_SIGNAL = CONFIG.get("arduino", "RF_ON_SIGNAL", fallback=None)
@@ -10,8 +11,8 @@ OFF_SIGNAL = CONFIG.get("arduino", "RF_OFF_SIGNAL", fallback=None)
 SCRIPT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
 if (ON_SIGNAL == None) or (OFF_SIGNAL == None):
-    print("Please set RF_ON_SIGNAL and RF_OFF_SIGNAL in config.txt")
-    quit()
+    print("Please set RF_ON_SIGNAL and RF_OFF_SIGNAL in config.txt", file=sys.stderr)
+    sys.exit(1)
 
 
 def replace_in_file(filename, tuples, destination_file):

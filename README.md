@@ -28,9 +28,8 @@ crontab -e
 # Periodic reporting of temperature
 */3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation report_weather
 
-# Remote control of the Raspberry Pi. TODO: merge the two files?
-*/5 * * * * /path/to/raspberry-pi-home-automation/update-should-send-emails.py
-*/6 * * * * /path/to/raspberry-pi-home-automation/update-should-reboot.py
+# Remote control of the Raspberry Pi
+*/2 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation remote_control
 
 # French and German news. There are antislashes before the % signs, cause % signs have a special meaning for cron.
 05 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
