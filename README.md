@@ -1,6 +1,6 @@
 # Setting up the Raspberry Pi
 
-![GPIO pins](GPIO.png)
+![GPIO pins](docs/GPIO.png)
 
 # Setup
 
@@ -82,7 +82,7 @@ sudo systemctl start video-recorder.service
 
 # Temperature, humidity, pressure
 
-Head over to [report_weather.README.md](report_weather.README.md).
+Head over to [report_weather.README.md](docs/report_weather.README.md).
 
 # MiniDLNA
 
