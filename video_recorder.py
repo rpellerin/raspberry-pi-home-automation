@@ -12,13 +12,13 @@ import subprocess
 import importlib
 import threading
 
-from picamera2.encoders import H264Encoder
-from picamera2.outputs import CircularOutput
-from picamera2 import Picamera2, MappedArray
+from picamera2.encoders import H264Encoder  # python3-picamera2
+from picamera2.outputs import CircularOutput  # python3-picamera2
+from picamera2 import Picamera2, MappedArray  # python3-picamera2
 from libcamera import Transform
 from libcamera import controls
 
-import cv2
+import cv2  # python3-opencv
 
 import turn_led
 
