@@ -1,4 +1,9 @@
 # Python virtual environment
 .venv/
-__pycache__/
+
+# Secrets
 config.txt
+
+# Other
+__pycache__/
+*.egg-info/
