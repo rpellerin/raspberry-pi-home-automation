@@ -18,14 +18,20 @@ def replace_in_file(filename, tuples, destination_file):
         destination.write(content)
 
 
+def destination_file_in_directory(directory=None):
+    if directory is None:
+        raise ValueError("No directory provided")
+    return f"{directory}/{os.path.basename(directory)}.ino"
+
+
 def build_and_deploy():
-    if (ON_SIGNAL == None) or (OFF_SIGNAL == None):
+    if (not ON_SIGNAL) or (not OFF_SIGNAL):
         print("Please set RF_ON_SIGNAL & RF_OFF_SIGNAL in config.txt", file=sys.stderr)
         sys.exit(1)
 
     # After this `with` block, directory `destination_directory` will be automatically deleted.
     with tempfile.TemporaryDirectory() as destination_directory, open(
-        f"{destination_directory}/{os.path.basename(destination_directory)}.ino", "x"
+        destination_file_in_directory(destination_directory), "x"
     ) as destination_file:
         replace_in_file(
             ARDUINO_SKETCH_FILEPATH,
