@@ -20,7 +20,7 @@ from libcamera import controls
 
 import cv2  # python3-opencv
 
-import turn_led
+import home_automation.turn_led as turn_led
 from home_automation.config import PUSHOVER_USER
 from home_automation.config import PUSHOVER_TOKEN
 
