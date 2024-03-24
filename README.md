@@ -61,7 +61,7 @@ source .venv/bin/activate
 pip3 install -r requirements.txt
 pip3 install -e .
 
-./build-arduino-sketch-and-deploy.py
+/path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation build_arduino_sketch_and_deploy
 
 sudo cp \
     systemd-services/shutdown.service \

@@ -60,9 +60,3 @@ def run():
         if not success:
             print("Failed to fetch 'remote_control' from App Script", file=sys.stderr)
         return success
-
-
-if __name__ == "__main__":
-    success = run()
-    if not success:
-        sys.exit(1)

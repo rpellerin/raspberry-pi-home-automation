@@ -1,6 +1,7 @@
 import sys
 from .report_weather import send_report
 from .remote_control import run as remote_control
+from .build_arduino_sketch_and_deploy import build_and_deploy
 
 
 if __name__ == "__main__":
@@ -15,6 +16,8 @@ if __name__ == "__main__":
         success = send_report()
     elif action == "remote_control":
         success = remote_control()
+    elif action == "build_arduino_sketch_and_deploy":
+        success = build_and_deploy()
     else:
         print(f"Unknown action: {action}", file=sys.stderr)
 
