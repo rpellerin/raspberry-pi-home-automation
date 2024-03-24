@@ -15,7 +15,7 @@ from timeit import default_timer as timer
 import serial
 
 CONFIG = importlib.import_module("config").get_config()
-GOOGLE_SCRIPTS_WEATHER_URL = CONFIG.get("weatherstation", "GOOGLE_SCRIPTS_WEATHER_URL")
+GOOGLE_SCRIPTS_URL = CONFIG.get("weatherstation", "GOOGLE_SCRIPTS_URL")
 DOOR_SENSOR_PIN = 18
 
 # Set Broadcom mode so we can address GPIO pins by number.
@@ -46,7 +46,7 @@ def cleanup(signal, frame):
 def send_request(data):
     try:
         response = requests.get(
-            GOOGLE_SCRIPTS_WEATHER_URL,
+            GOOGLE_SCRIPTS_URL,
             params={
                 "datetime": data["timestamp"],
                 "door_status": data["door_status"],

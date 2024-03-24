@@ -4,14 +4,14 @@ import importlib
 import json
 import sys
 import os
-from .config import get_config
-
-url = get_config().get("weatherstation", "GOOGLE_SCRIPTS_WEATHER_URL")
+from .config import GOOGLE_SCRIPTS_URL
 
 
 def send_request(current_value):
     try:
-        response = requests.get(url, params={"remote_control": current_value})
+        response = requests.get(
+            GOOGLE_SCRIPTS_URL, params={"remote_control": current_value}
+        )
         return (response.status_code == 200, json.loads(response.text))
     except requests.exceptions.RequestException:
         return None

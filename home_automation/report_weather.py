@@ -5,9 +5,7 @@ import requests
 import redis
 import json
 import sys
-from .config import get_config
-
-url = get_config().get("weatherstation", "GOOGLE_SCRIPTS_WEATHER_URL")
+from .config import GOOGLE_SCRIPTS_URL
 
 port = 1
 address = 0x76
@@ -20,7 +18,7 @@ calibration_params = bme280.load_calibration_params(bus, address)
 def send_request(data):
     try:
         response = requests.get(
-            url,
+            GOOGLE_SCRIPTS_URL,
             params={
                 "datetime": data["timestamp"],
                 "temperature": data["temperature"],
