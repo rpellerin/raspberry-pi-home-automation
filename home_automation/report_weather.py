@@ -4,6 +4,7 @@ import time
 import requests
 import redis
 import json
+import sys
 from .config import get_config
 
 url = get_config().get("weatherstation", "GOOGLE_SCRIPTS_WEATHER_URL")
@@ -49,10 +50,10 @@ def send_report():
 
     try:
         successfully_sent = send_request(data)
-        print("Sent")
     except BaseException as e:
-        print("Error: %s" % str(e))
-
-    if not successfully_sent:
-        print("Failed to post to Google App Script")
-        print(data)
+        print("Error: %s" % str(e), file=sys.stderr)
+    finally:
+        if not successfully_sent:
+            print("Failed to post to Google App Script", file=sys.stderr)
+            print(data, file=sys.stderr)
+        return successfully_sent

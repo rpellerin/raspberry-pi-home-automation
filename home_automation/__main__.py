@@ -10,12 +10,13 @@ if __name__ == "__main__":
         print("No action given.")
         sys.exit(1)
 
+    success = False
     if action == "report_weather":
-        send_report()
+        success = send_report()
     elif action == "remote_control":
         success = remote_control()
-        if not success:
-            sys.exit(1)
     else:
         print(f"Unknown action: {action}", file=sys.stderr)
+
+    if not success:
         sys.exit(1)
