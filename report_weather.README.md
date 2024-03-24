@@ -26,6 +26,8 @@
      const shouldReboot = shouldRebootCell.getValue().toLowerCase();
      if (shouldReboot !== "") shouldRebootCell.setValue("");
 
+     sheet.getRange("F6").setValue(new Date().toString());
+
      return JSON.stringify({ shouldEnableAlarm, shouldReboot });
    }
 
