@@ -209,11 +209,11 @@ void loop() {
                 [
                     (
                         "#define ON_SIGNAL ---REPLACE_ME---",
-                        f"#define ON_SIGNAL 123123",
+                        "#define ON_SIGNAL 123123",
                     ),
                     (
                         "#define OFF_SIGNAL ---REPLACE_ME---",
-                        f"#define OFF_SIGNAL 321321",
+                        "#define OFF_SIGNAL 321321",
                     ),
                 ],
                 ANY,  # The destination temp file
