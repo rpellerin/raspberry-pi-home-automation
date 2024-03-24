@@ -199,9 +199,11 @@ void loop() {
         ) as mocked_replace_in_file:
             assert build_arduino_sketch_and_deploy.build_and_deploy()
             mock_os_system.assert_any_call("sudo systemctl stop door-sensor")
+            assert mock_os_system.mock_calls[1].startsWith(
+                "call('arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi"
+            )
             mock_os_system.assert_any_call("sudo systemctl start door-sensor")
 
-            # 2 calls to systemctl, one call to `arduino-cli compile ...`
             assert mock_os_system.call_count == 3
 
             mocked_replace_in_file.assert_called_once_with(
