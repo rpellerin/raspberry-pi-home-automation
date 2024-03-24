@@ -21,12 +21,11 @@ from libcamera import controls
 import cv2  # python3-opencv
 
 import turn_led
+from home_automation.config import PUSHOVER_USER
+from home_automation.config import PUSHOVER_TOKEN
 
-CONFIG = importlib.import_module("config").get_config()
 REPO_PATH = os.path.join(os.path.dirname(__file__))
 SEND_EMAIL_SCRIPT_PATH = os.path.join(REPO_PATH, "send-email.sh")
-PUSHOVER_USER = CONFIG.get("pushover", "PUSHOVER_USER", fallback=None)
-PUSHOVER_TOKEN = CONFIG.get("pushover", "PUSHOVER_TOKEN", fallback=None)
 
 format_logs = "%(asctime)s: %(message)s"
 logging.basicConfig(stream=sys.stdout, format=format_logs, level=logging.INFO)

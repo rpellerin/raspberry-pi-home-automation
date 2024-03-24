@@ -11,3 +11,5 @@ def get_config():
 
 
 GOOGLE_SCRIPTS_URL = get_config().get("weatherstation", "GOOGLE_SCRIPTS_URL")
+PUSHOVER_USER = get_config().get("pushover", "PUSHOVER_USER", fallback=None)
+PUSHOVER_TOKEN = get_config().get("pushover", "PUSHOVER_TOKEN", fallback=None)

@@ -13,9 +13,8 @@ import threading
 import logging
 from timeit import default_timer as timer
 import serial
+from home_automation.config import GOOGLE_SCRIPTS_URL
 
-CONFIG = importlib.import_module("config").get_config()
-GOOGLE_SCRIPTS_URL = CONFIG.get("weatherstation", "GOOGLE_SCRIPTS_URL")
 DOOR_SENSOR_PIN = 18
 
 # Set Broadcom mode so we can address GPIO pins by number.
