@@ -107,6 +107,7 @@ oldIsOpen = None
 last_thread = None
 
 r = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
+# TODO: put "alarm_state" in a constant, and replace all occurrences
 current_or_future_alarm_state = r.get("alarm_state") or "unknown"
 actual_current_alarm_state = current_or_future_alarm_state
 set_alarm_at_time = None
@@ -150,6 +151,7 @@ while True:
     if arduino.in_waiting > 0:
         message = arduino.readline().decode("utf-8").rstrip()
 
+        # TODO: put this string in a constant
         if (message == "Motion detected") and (
             actual_current_alarm_state == ALARM_ARMED
         ):
@@ -175,11 +177,21 @@ while True:
                     last_thread.start()
                     r.publish("door_status", "motion")
 
+        # TODO: put these 2 strings in constants
         if message == "ON pressed" or message == "OFF pressed":
             logging.info(f"Received from Arduino: {message}")
             new_alarm_state = (
                 ALARM_ARMED if (message == "ON pressed") else ALARM_DISARMED
             )
+
+            if current_or_future_alarm_state == actual_current_alarm_state:
+                # Let's refetch the latest state from Redis, cause the alarm might have been
+                # armed or disarmed remotely through the Google Sheet.
+                # As an example, if it was armed and was then disarmed through the sheet,
+                # no need to play any sound on the Arduino.
+                # TODO: test this behavior
+                current_or_future_alarm_state = r.get("alarm_state")
+                actual_current_alarm_state = current_or_future_alarm_state
 
             if new_alarm_state != current_or_future_alarm_state:
                 if message == "ON pressed":
