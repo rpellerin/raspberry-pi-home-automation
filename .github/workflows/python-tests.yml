@@ -39,4 +39,4 @@ jobs:
             echo "Should have failed"
             false
           fi
-          [ "STDERR" = "Unkown action: yolo." ] || false
+          [ "STDERR" = "Unkown action: yolo" ] || false
