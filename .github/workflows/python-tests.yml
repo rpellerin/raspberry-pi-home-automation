@@ -29,16 +29,14 @@ jobs:
           python3 -m pytest
       - name: Test the CLI
         run: |
-          if python3 -m home_automation 2>&1 1>/dev/null); then
+          if STDERR=$(python3 -m home_automation 2>&1 1>/dev/null); then
             echo "Should have failed"
             false
-          else
-          STDERR=$(python3 -m home_automation 2>&1 1>/dev/null) || true
-          [ "STDERR" = "No action given." ]
+          fi
+          [ "STDERR" = "No action given." ] || false
 
-          if python3 -m home_automation yolo 2>&1 1>/dev/null); then
+          if STDERR=$(python3 -m home_automation yolo 2>&1 1>/dev/null); then
             echo "Should have failed"
             false
-          else
-          STDERR=$(python3 -m home_automation yolo 2>&1 1>/dev/null) || true
-          [ "STDERR" = "Unkown action: yolo." ]
+          fi
+          [ "STDERR" = "Unkown action: yolo." ] || false
