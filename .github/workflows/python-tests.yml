@@ -19,6 +19,7 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install -r requirements.txt
+          python3 -m pip install -e .
       - name: Create empty config.txt
         # Otherwise when importing config.py, before any mock is created, it fails cause config.txt does not exist
         run: |
