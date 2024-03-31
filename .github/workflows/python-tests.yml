@@ -28,12 +28,17 @@ jobs:
         run: |
           python3 -m pytest
       - name: Test the CLI
-        continue-on-error: true
         run: |
-          STDERR=$(python3 -m home_automation 2>&1 1>/dev/null)
-          ERR_CODE=$?
-          [ "STDERR" = "No action given." ] && [ $ERR_CODE -eq 1 ]
+          if python3 -m home_automation 2>&1 1>/dev/null); then
+            echo "Should have failed"
+            false
+          else
+          STDERR=$(python3 -m home_automation 2>&1 1>/dev/null) || true
+          [ "STDERR" = "No action given." ]
 
-          STDERR=$(python3 -m home_automation yolo 2>&1 1>/dev/null)
-          ERR_CODE=$?
-          [ "STDERR" = "Unkown action: yolo." ] && [ $ERR_CODE -eq 1 ]
+          if python3 -m home_automation yolo 2>&1 1>/dev/null); then
+            echo "Should have failed"
+            false
+          else
+          STDERR=$(python3 -m home_automation yolo 2>&1 1>/dev/null) || true
+          [ "STDERR" = "Unkown action: yolo." ]
