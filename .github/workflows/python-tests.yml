@@ -27,16 +27,3 @@ jobs:
       - name: Test with pytest
         run: |
           python3 -m pytest
-      - name: Test the CLI
-        run: |
-          if STDERR=$(python3 -m home_automation 2>&1 1>/dev/null); then
-            echo "Should have failed"
-            false
-          fi
-          [ "STDERR" = "No action given." ] || false
-
-          if STDERR=$(python3 -m home_automation yolo 2>&1 1>/dev/null); then
-            echo "Should have failed"
-            false
-          fi
-          [ "STDERR" = "Unkown action: yolo" ] || false

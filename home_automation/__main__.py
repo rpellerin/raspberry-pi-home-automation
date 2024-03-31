@@ -1,27 +1,30 @@
 import sys
+from .remote_control import run as remote_control
 
-if __name__ == "__main__":
-    action = sys.argv[1] if len(sys.argv) >= 2 else None
 
+def run(action):
     if action == None:
         print("No action given.", file=sys.stderr)
-        sys.exit(1)
+        return False
 
-    success = False
     if action == "report_weather":
-        from .report_weather import send_report  # TODO: test these lazy imports
+        from .report_weather import send_report  # Lazy import
 
-        success = send_report()
+        return send_report()
     elif action == "remote_control":
         from .remote_control import run as remote_control
 
-        success = remote_control()
+        return remote_control()
     elif action == "build_arduino_sketch_and_deploy":
         from .build_arduino_sketch_and_deploy import build_and_deploy
 
-        success = build_and_deploy()
+        return build_and_deploy()
     else:
         print(f"Unknown action: {action}", file=sys.stderr)
+        return False
 
-    if not success:
+
+if __name__ == "__main__":
+    action = sys.argv[1] if len(sys.argv) >= 2 else None
+    if not run(action):
         sys.exit(1)
