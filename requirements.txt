@@ -7,11 +7,11 @@ geopy==2.4.1
 #gpiozero==1.6.2 # installed through the APT package `python3-gpiozero`
 #idna==2.10
 pyserial==3.5
-pytest==8.1.1
+pytest==8.2.1
 redis==5.0.4
 #requests==2.31.0
 RPi.bme280==0.2.4
 #RPi.GPIO==0.7.1 # installed through the APT package `python3-rpi.gpio`, presented by default on Raspbian
 smbus2==0.4.3
 #urllib3==1.26.18
-yt-dlp==2024.4.9
+yt-dlp==2024.5.27
