@@ -8,7 +8,7 @@ geopy==2.4.1
 #idna==2.10
 pyserial==3.5
 pytest==8.2.2
-redis==5.0.6
+redis==5.0.7
 #requests==2.31.0
 RPi.bme280==0.2.4
 #RPi.GPIO==0.7.1 # installed through the APT package `python3-rpi.gpio`, presented by default on Raspbian
