@@ -3,7 +3,6 @@
 beautifulsoup4==4.12.3
 #certifi==2024.2.2
 #chardet==3.0.4
-geopy==2.4.1
 #gpiozero==1.6.2 # installed through the APT package `python3-gpiozero`
 #idna==2.10
 pyserial==3.5
