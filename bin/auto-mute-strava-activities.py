@@ -21,6 +21,7 @@ REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 DRY_RUN = bool(int(os.environ.get("DRY_RUN") or "1"))
+DO_NOT_HIDE_RUNS = bool(int(os.environ.get("DO_NOT_HIDE_RUNS") or "0"))
 
 if (CLIENT_ID == None) or (CLIENT_SECRET == None):
     print("Please set CLIENT_ID and CLIENT_SECRET")
@@ -113,7 +114,7 @@ def should_be_muted(activity):
     return (
         (sport_type == "Walk")
         or (sport_type == "Ride" and distance < 10_000.0)
-        or (sport_type == "Run" and distance < 10_000.0)
+        or ((not DO_NOT_HIDE_RUNS) and (sport_type == "Run" and distance < 10_000.0))
     ) and (not hide_from_home)
 
 
