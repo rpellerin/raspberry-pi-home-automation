@@ -114,7 +114,7 @@ def should_be_muted(activity):
     return (
         (sport_type == "Walk")
         or (sport_type == "Ride" and distance < 10_000.0)
-        or ((not DO_NOT_HIDE_RUNS) and (sport_type == "Run" and distance < 10_000.0))
+        or ((not DO_NOT_HIDE_RUNS) and (sport_type == "Run" and distance < 15_000.0))
     ) and (not hide_from_home)
 
 
