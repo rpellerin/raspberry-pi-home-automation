@@ -65,7 +65,9 @@
              return ContentService.createTextOutput(result);
          }
        }
-       rowData[0] = new Date();
+       const now = new Date();
+       const isoDateTimeInCurrentTimezone = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+       rowData[0] = isoDateTimeInCurrentTimezone; // "2024-09-21 18:04:12"
        Logger.log(JSON.stringify(rowData));
 
        const sheet =
