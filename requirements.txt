@@ -13,4 +13,4 @@ RPi.bme280==0.2.4
 #RPi.GPIO==0.7.1 # installed through the APT package `python3-rpi.gpio`, presented by default on Raspbian
 smbus2==0.4.3
 #urllib3==1.26.18
-yt-dlp==2024.8.6
+yt-dlp==2024.9.27
