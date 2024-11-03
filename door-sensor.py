@@ -152,30 +152,37 @@ while True:
         message = arduino.readline().decode("utf-8").rstrip()
 
         # TODO: put this string in a constant
-        if (message == "Motion detected") and (
-            actual_current_alarm_state == ALARM_ARMED
-        ):
-            # We detected motion, and alarm is armed
-            # If the alarm is not armed, we ignore motion detection, cause that would happen all the time
+        if message == "Motion detected":
+            if current_or_future_alarm_state == actual_current_alarm_state:
+                # Let's refetch the latest state from Redis, cause the alarm might have been
+                # armed or disarmed remotely through the Google Sheet.
+                # TODO: test this behavior - and factorize with the same lines further down below
+                current_or_future_alarm_state = r.get("alarm_state")
+                actual_current_alarm_state = current_or_future_alarm_state
 
-            now_in_seconds = int(time.time())
+            if actual_current_alarm_state == ALARM_ARMED:
+                # We detected motion, and alarm is armed
+                # If the alarm is not armed, we ignore motion detection, cause that would happen all the time
 
-            if (last_motion_detected_at == None) or (
-                (last_motion_detected_at + int(REEMIT_AFTER_SECONDS)) < now_in_seconds
-            ):
-                # We detected motion for the first time, or it's been more than 15 secondes since the last initial detection
-                last_motion_detected_at = now_in_seconds
-                logging.info(f"Received from Arduino: {message}")
+                now_in_seconds = int(time.time())
 
-                # Let's raise the alarm only if the door is not already open
-                if not isOpen:
-                    now = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime())
-                    data = {"timestamp": now, "door_status": "motion detected"}
-                    last_thread = threading.Thread(
-                        target=post_to_google_scripts, args=[data, r, last_thread]
-                    )
-                    last_thread.start()
-                    r.publish("door_status", "motion")
+                if (last_motion_detected_at == None) or (
+                    (last_motion_detected_at + int(REEMIT_AFTER_SECONDS))
+                    < now_in_seconds
+                ):
+                    # We detected motion for the first time, or it's been more than 15 secondes since the last initial detection
+                    last_motion_detected_at = now_in_seconds
+                    logging.info(f"Received from Arduino: {message}")
+
+                    # Let's raise the alarm only if the door is not already open
+                    if not isOpen:
+                        now = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime())
+                        data = {"timestamp": now, "door_status": "motion detected"}
+                        last_thread = threading.Thread(
+                            target=post_to_google_scripts, args=[data, r, last_thread]
+                        )
+                        last_thread.start()
+                        r.publish("door_status", "motion")
 
         # TODO: put these 2 strings in constants
         if message == "ON pressed" or message == "OFF pressed":

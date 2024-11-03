@@ -180,11 +180,14 @@ def door_status_change(message):
         logging.info("Recording...")
         filename = f"/tmp/{now}.h264"
         encoder.output.fileoutput = filename
-        encoder.output.start()
+        encoder.output.start() # TODO: this line (or the one 4 lines below) can crash sometimes. Find a way to recover.
 
         time.sleep(5)  # 5 seconds of video this far
         photo2 = f"/tmp/{now}-2.jpg"
-        picam2.capture_file(photo2)
+        logging.info("Taking photo 2...")
+        picam2.capture_file(photo2) # TODO: this line can crash sometimes. Find a way to recover.
+        logging.info("Done")
+
         if alarm_enabled:
             post_message(
                 "Alarm - photo 2", push_notification_too=True, attachment=photo2
