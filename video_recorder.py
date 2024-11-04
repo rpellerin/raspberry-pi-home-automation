@@ -12,21 +12,20 @@ import subprocess
 import importlib
 import threading
 
-from picamera2.encoders import H264Encoder
-from picamera2.outputs import CircularOutput
-from picamera2 import Picamera2, MappedArray
+from picamera2.encoders import H264Encoder  # python3-picamera2
+from picamera2.outputs import CircularOutput  # python3-picamera2
+from picamera2 import Picamera2, MappedArray  # python3-picamera2
 from libcamera import Transform
 from libcamera import controls
 
-import cv2
+import cv2  # python3-opencv
 
-import turn_led
+import home_automation.turn_led as turn_led
+from home_automation.config import PUSHOVER_USER
+from home_automation.config import PUSHOVER_TOKEN
 
-CONFIG = importlib.import_module("config").get_config()
 REPO_PATH = os.path.join(os.path.dirname(__file__))
 SEND_EMAIL_SCRIPT_PATH = os.path.join(REPO_PATH, "send-email.sh")
-PUSHOVER_USER = CONFIG.get("pushover", "PUSHOVER_USER", fallback=None)
-PUSHOVER_TOKEN = CONFIG.get("pushover", "PUSHOVER_TOKEN", fallback=None)
 
 format_logs = "%(asctime)s: %(message)s"
 logging.basicConfig(stream=sys.stdout, format=format_logs, level=logging.INFO)
@@ -181,11 +180,14 @@ def door_status_change(message):
         logging.info("Recording...")
         filename = f"/tmp/{now}.h264"
         encoder.output.fileoutput = filename
-        encoder.output.start()
+        encoder.output.start() # TODO: this line (or the one 4 lines below) can crash sometimes. Find a way to recover.
 
         time.sleep(5)  # 5 seconds of video this far
         photo2 = f"/tmp/{now}-2.jpg"
-        picam2.capture_file(photo2)
+        logging.info("Taking photo 2...")
+        picam2.capture_file(photo2) # TODO: this line can crash sometimes. Find a way to recover.
+        logging.info("Done")
+
         if alarm_enabled:
             post_message(
                 "Alarm - photo 2", push_notification_too=True, attachment=photo2

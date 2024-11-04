@@ -1,6 +1,6 @@
 # Setting up the Raspberry Pi
 
-![GPIO pins](GPIO.png)
+![GPIO pins](docs/GPIO.png)
 
 # Setup
 
@@ -15,17 +15,27 @@ You can stop reading the tutorial at the end of the section "Configuration".
 
 ```bash
 crontab -e
+# Daily cleaning of /var/lib/minidlna and /tmp (videos and pictures from the webcam). Durations are in days (`mtime`).
 0 21 * * * find /var/lib/minidlna -type f -mtime +2 -delete
 0 21 * * * find /var/lib/minidlna -type d -mtime +2 -empty -delete
 0 21 * * * find /tmp -type f -iname '*.mp4' -mtime +90 -delete
 0 21 * * * find /tmp -type f -iname '*.h264' -mtime +90 -delete
 0 21 * * * find /tmp -type f -iname '*.jpg' -mtime +90 -delete
-0 */1 * * * CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py
-*/3 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/report_weather.py
-*/5 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-send-emails.py
-*/6 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/update-should-reboot.py
-15 22 * * * /home/pi/.local/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
-0 21 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
+
+# Periodic update of Strava activities
+0 */1 * * * DRY_RUN=0 CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py 2>&1 | /usr/bin/logger -t STRAVA
+
+# Periodic reporting of temperature
+*/3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation report_weather
+
+# Remote control of the Raspberry Pi
+*/2 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation remote_control
+
+# French and German news. There are antislashes before the % signs, cause % signs have a special meaning for cron.
+05 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
+15 22 * * * /path/to/raspberry-pi-home-automation/.venv/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
+# Removing the subtitles file from German news
+30 22 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
 
 sudo su
 crontab -e
@@ -42,23 +52,29 @@ sudo vcgencmd get_camera
 
 ```bash
 sudo apt install python3-gpiozero redis-server python3-picamera ffmpeg libatlas-base-dev python3-picamera2 python3-opencv
+# TODO: remove python3-picamera, cause replaced by python3-picamera2?
 
 cd /to/the/cloned/repo
 
-python3 -m venv --system-site-packages .pyenv # --system-site-packages to have the system-installed picamera2 module available
-source .pyenv/bin/activate
+python3 -m venv --system-site-packages .venv # --system-site-packages to have the system-installed picamera2 module available
+source .venv/bin/activate
 pip3 install -r requirements.txt
+pip3 install -e . # So that our package can be called directly from the CLI, like `python -m home_automation`
 
-./build-arduino-sketch-and-deploy.py
+/path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation build_arduino_sketch_and_deploy
 
-sudo cp services/minidlna.service services/shutdown.service services/door-sensor.service services/video-recorder.service /etc/systemd/system
+sudo cp \
+    systemd-services/shutdown.service \
+    systemd-services/door-sensor.service \
+    systemd-services/video-recorder.service \
+      /etc/systemd/system
 
-sudo systemctl enable minidlna.service
 sudo systemctl enable shutdown.service
 sudo systemctl enable door-sensor.service
 sudo systemctl enable video-recorder.service
+
 sudo systemctl daemon-reload
-sudo systemctl start minidlna.service
+
 sudo systemctl start shutdown.service
 sudo systemctl start door-sensor.service
 sudo systemctl start video-recorder.service
@@ -66,11 +82,61 @@ sudo systemctl start video-recorder.service
 
 # Temperature, humidity, pressure
 
-Head over to [report_weather.README.md](report_weather.README.md).
+Head over to [report_weather.README.md](docs/report_weather.README.md).
 
 # MiniDLNA
 
-Head over to [the `minidlna/` folder](minidlna/README.md).
+## Foreword
+
+MiniDLNA is the former name. The project is now called ReadyMedia. You can find it [here](https://sourceforge.net/projects/minidlna/).
+
+## Install
+
+You may install it through `apt` but you might get an old version (check with `sudo apt search minidlna`). In my case, as of February 2023, I would have gotten version 1.3.0 through `apt`, while 1.3.2 is already out, with `.webm` supported freshly added. So I decided to compile it myself from upstream.
+
+### Manual install
+
+```bash
+# Prerequisite
+sudo apt install build-essential gettext
+# gettext is needed on Raspberry Pi:
+# reddit.com/r/raspberry_pi/comments/9qq3y5/readymedia_12x_fails_with_cannot_stat_tdagmo_no/
+
+# Download
+wget https://nav.dl.sourceforge.net/project/minidlna/minidlna/1.3.2/minidlna-1.3.2.tar.gz
+tar -xvf minidlna-1.3.2.tar.gz
+cd minidlna-1.3.2
+
+# Compile
+./configure
+# Based on errors you got with the above-mentioned command, you'll have to
+# sudo apt install libavutil-dev libavcodec-dev libavformat-dev libjpeg-dev libsqlite3-dev libexif-dev \
+#   libid3tag0-dev libogg-dev libvorbis-dev libflac-dev
+# and relaunch ./configure
+make
+
+#Install
+sudo make install
+
+sudo mkdir /var/cache/minidlna
+sudo mkdir /var/lib/minidlna
+sudo chown minidlna:minidlna /var/cache/minidlna
+sudo chown minidlna:minidlna /var/lib/minidlna
+sudo chmod -R o+rX /var/lib/minidlna
+
+# Configure
+sudo cp minidlna.conf /etc/
+sudo vim /etc/minidlna.conf
+# friendly_name=some_nicer_name_than_the_default_hostname
+# log_dir=/var/log
+# media_dir=/var/lib/minidlna
+
+# Now copy the service from this repo and start it
+sudo cp systemd-services/minidlna.service /etc/systemd/system
+sudo systemctl enable minidlna.service
+sudo systemctl daemon-reload
+sudo systemctl start minidlna.service
+```
 
 # Further reading
 

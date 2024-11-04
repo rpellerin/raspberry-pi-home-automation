@@ -8,19 +8,27 @@
 
    const MAX_ROW_NUMBER = 39500;
 
-   function getShouldSendEmails() {
+   function getRemoteControl(currentValue = "") {
      const sheet =
        SpreadsheetApp.openById(sheetId).getSheetByName("Door status");
-     return sheet.getRange("F1").getValue();
-   }
 
-   function getShouldReboot() {
-     const sheet =
-       SpreadsheetApp.openById(sheetId).getSheetByName("Door status");
-     const cell = sheet.getRange("F2");
-     const value = cell.getValue();
-     cell.setValue("");
-     return value;
+     const shouldEnableAlarmCell = sheet.getRange("F1");
+     const shouldEnableAlarm = shouldEnableAlarmCell.getValue().toLowerCase();
+     if (shouldEnableAlarm !== "") shouldEnableAlarmCell.setValue("");
+
+     sheet
+       .getRange("F5")
+       .setValue(
+         currentValue !== "" ? currentValue : "unknown (value not received)"
+       );
+
+     const shouldRebootCell = sheet.getRange("F2");
+     const shouldReboot = shouldRebootCell.getValue().toLowerCase();
+     if (shouldReboot !== "") shouldRebootCell.setValue("");
+
+     sheet.getRange("F6").setValue(new Date().toString());
+
+     return JSON.stringify({ shouldEnableAlarm, shouldReboot });
    }
 
    function doGet(e) {
@@ -49,18 +57,17 @@
            case "door_status":
              rowData[5] = value;
              break;
-           case "get_should_send_emails":
-             result = getShouldSendEmails();
-             return ContentService.createTextOutput(result);
-           case "get_should_reboot":
-             result = getShouldReboot();
+           case "remote_control":
+             result = getRemoteControl(value);
              return ContentService.createTextOutput(result);
            default:
              result = "failed";
              return ContentService.createTextOutput(result);
          }
        }
-       rowData[0] = new Date();
+       const now = new Date();
+       const isoDateTimeInCurrentTimezone = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+       rowData[0] = isoDateTimeInCurrentTimezone; // "2024-09-21 18:04:12"
        Logger.log(JSON.stringify(rowData));
 
        const sheet =
@@ -86,19 +93,18 @@
 
    ```bash
    curl -L https://script.google.com/macros/s/XYZ/exec\?temperature\=20\&humidity\=50
-
    ```
 
 1. On the Raspberry Pi, close this repo, install redis and set up the Python env from the root of this repo:
 
    ```bash
    sudo apt install redis-server
-   python3 -m venv .pyenv
-   source .pyenv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    pip3 install -r requirements.txt
 
    ```
 
 1. In `weatherstation.py`, change the URL for your valid Google Script URL.
 1. Run `sudo raspi-config`, in `3 Interface Options`, enable `I2C`.
-1. Create a cronjob: `*/3 * * * * /path/to/raspberry-pi-home-automation/.pyenv/bin/python /path/to/raspberry-pi-home-automation/temperature/weatherstation.py`
+1. Create a cronjob: `*/3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python /path/to/raspberry-pi-home-automation/temperature/weatherstation.py`

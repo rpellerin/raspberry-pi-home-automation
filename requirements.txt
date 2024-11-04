@@ -1,14 +1,16 @@
-beautifulsoup4==4.11.2
-certifi==2023.7.22
-chardet==3.0.4
-geopy==2.4.0
-gpiozero==1.6.2
-idna==2.10
+# Those that are commented come by default on Linux (I think!), or through the apt packages installed in README.md
+
+beautifulsoup4==4.12.3
+#certifi==2024.2.2
+#chardet==3.0.4
+#gpiozero==1.6.2 # installed through the APT package `python3-gpiozero`
+#idna==2.10
 pyserial==3.5
-redis==4.5.4
-requests==2.31.0
+pytest==8.3.3
+redis==5.2.0
+#requests==2.31.0
 RPi.bme280==0.2.4
-RPi.GPIO==0.7.1
-smbus2==0.4.0
-urllib3==1.26.18
-yt-dlp==2023.11.14
+#RPi.GPIO==0.7.1 # installed through the APT package `python3-rpi.gpio`, presented by default on Raspbian
+smbus2==0.5.0
+#urllib3==1.26.18
+yt-dlp==2024.10.22
