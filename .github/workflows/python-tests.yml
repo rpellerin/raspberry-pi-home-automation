@@ -17,8 +17,9 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user -r requirements.txt
+          python3 -m pip install --user -e .
       - name: Create empty config.txt
         # Otherwise when importing config.py, before any mock is created, it fails cause config.txt does not exist
         run: |
