@@ -19,7 +19,7 @@ jobs:
         run: |
           python3 -m pip install --user --upgrade pip
           python3 -m pip install --user -r requirements.txt
-          python3 -m pip install --user -e .
+          python3 -m pip install --user -e . # So that our package can be called directly in tests, like `python -m home_automation`
       - name: Create empty config.txt
         # Otherwise when importing config.py, before any mock is created, it fails cause config.txt does not exist
         run: |
