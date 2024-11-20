@@ -1,6 +1,15 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import logging
+
+MockRPi = MagicMock()
+modules = {
+    "RPi": MockRPi,
+    "RPi.GPIO": MockRPi.GPIO,
+}
+patcher = patch.dict("sys.modules", modules)
+patcher.start()
+
 import home_automation.turn_led as turn_led
 
 class TestTurnLed(unittest.TestCase):
