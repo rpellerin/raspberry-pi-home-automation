@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import logging
 
 MockRPi = MagicMock()
 modules = {
@@ -10,28 +9,30 @@ modules = {
 patcher = patch.dict("sys.modules", modules)
 patcher.start()
 
+# We need to mock RPi before importing our module
 import home_automation.turn_led as turn_led
 
+
+@patch("logging.info")
 class TestTurnLed(unittest.TestCase):
-    @patch('turn_led.GPIO')
-    def test_turn_off(self, mock_gpio):
-        with patch('turn_led.logging') as mock_logging:
-            turn_led.turn_off()
-            mock_gpio.setup.assert_called_with(23, mock_gpio.OUT)
-            mock_gpio.output.assert_called_with(23, mock_gpio.LOW)
-            mock_logging.info.assert_called_with("LED off")
+    @patch("RPi.GPIO.setup")
+    @patch("RPi.GPIO.output")
+    def test_turn_off(self, patched_output, patched_setup, mock_logging):
+        turn_led.turn_off()
+        patched_setup.assert_called_with(23, MockRPi.GPIO.OUT)
+        patched_output.assert_called_with(23, MockRPi.GPIO.LOW)
+        mock_logging.assert_called_with("LED off")
 
-    @patch('turn_led.GPIO')
-    def test_turn_on(self, mock_gpio):
-        with patch('turn_led.logging') as mock_logging:
-            turn_led.turn_on()
-            mock_gpio.setup.assert_called_with(23, mock_gpio.OUT)
-            mock_gpio.output.assert_called_with(23, mock_gpio.HIGH)
-            mock_logging.info.assert_called_with("LED on")
+    @patch("RPi.GPIO.setup")
+    @patch("RPi.GPIO.output")
+    def test_turn_on(self, patched_output, patched_setup, mock_logging):
+        turn_led.turn_on()
+        patched_setup.assert_called_with(23, MockRPi.GPIO.OUT)
+        patched_output.assert_called_with(23, MockRPi.GPIO.HIGH)
+        mock_logging.assert_called_with("LED on")
 
-    @patch('turn_led.GPIO')
-    def test_cleanup(self, mock_gpio):
-        with patch('turn_led.logging') as mock_logging:
+    def test_cleanup(self, mock_logging):
+        with patch("RPi.GPIO.cleanup") as mock_cleanup:
             turn_led.cleanup()
-            mock_gpio.cleanup.assert_called_once()
-            mock_logging.info.assert_called_with("LED cleaned up")
+            mock_cleanup.assert_called_once()
+            mock_logging.assert_called_with("LED cleaned up")
