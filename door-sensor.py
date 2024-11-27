@@ -125,6 +125,11 @@ while True:
     isOpen = GPIO.input(DOOR_SENSOR_PIN)
 
     if isOpen != oldIsOpen:
+        if actual_current_alarm_state == ALARM_ARMED and isOpen:
+            arduino.write("sound_alarm\n".encode("utf-8"))
+        else:
+            arduino.write("do_not_sound_alarm\n".encode("utf-8"))
+
         start_time = timer()
 
         door_status = "open" if isOpen else "closed"
@@ -144,6 +149,9 @@ while True:
 
     if (isOpen) and (isOpen == oldIsOpen):
         if (timer() - start_time) >= REEMIT_AFTER_SECONDS:
+            if actual_current_alarm_state == ALARM_ARMED:
+                arduino.write("start_alarm\n".encode("utf-8"))
+
             start_time = timer()
             r.publish("door_status", "still_open")
             logging.info("Re-emitted status (still_open) to Redis")
