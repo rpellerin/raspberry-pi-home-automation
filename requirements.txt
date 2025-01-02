@@ -6,7 +6,7 @@ beautifulsoup4==4.12.3
 #gpiozero==1.6.2 # installed through the APT package `python3-gpiozero`
 #idna==2.10
 pyserial==3.5
-pytest==8.3.3
+pytest==8.3.4
 redis==5.2.1
 requests==2.32.2
 RPi.bme280==0.2.4
