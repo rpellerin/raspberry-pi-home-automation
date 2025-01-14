@@ -70,6 +70,12 @@
        rowData[0] = isoDateTimeInCurrentTimezone; // "2024-09-21 18:04:12"
        Logger.log(JSON.stringify(rowData));
 
+       const lock = LockService.getScriptLock();
+       const success = lock.tryLock(30000); // 30 secs
+       if (!success) {
+         Logger.log('Could not obtain lock after 30 seconds. Proceeding anyways... despite the risk of overwriting the current last line in the sheet.');
+       }
+
        const sheet =
          SpreadsheetApp.openById(sheetId).getSheetByName("Raw data");
 
