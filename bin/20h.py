@@ -10,7 +10,8 @@ import yt_dlp
 from bs4 import BeautifulSoup
 
 # crontab -e
-# 30 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
+# 08 21 * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m pip install -U --pre "yt-dlp[default]"
+# 10 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
 
 url = "https://www.france.tv/france-2/journal-20h00/"
 
