@@ -1,6 +1,6 @@
 # Those that are commented come by default on Linux (I think!), or through the apt packages installed in README.md
 
-beautifulsoup4==4.13.5
+beautifulsoup4==4.14.2
 #certifi==2024.2.2
 #chardet==3.0.4
 #gpiozero==1.6.2 # installed through the APT package `python3-gpiozero`
