@@ -56,7 +56,8 @@ def run():
         print("Error: %s" % str(e))
         print(e)
         success = False
-    finally:
-        if not success:
-            print("Failed to fetch 'remote_control' from App Script", file=sys.stderr)
-        return success
+
+    if not success:
+        print("Failed to fetch 'remote_control' from App Script", file=sys.stderr)
+
+    return success
