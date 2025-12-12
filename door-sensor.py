@@ -23,6 +23,8 @@ GPIO.setmode(GPIO.BCM)
 format_logs = "%(asctime)s: %(message)s"
 logging.basicConfig(stream=sys.stdout, format=format_logs, level=logging.INFO)
 
+# The Arduino will occasionally stop responding completely, after a long uptime. Only a full reboot
+# of the Raspberry Pi will make it work again.
 arduino = serial.Serial(
     "/dev/ttyACM0", 9600, timeout=1
 )  # 9600 must be the same number as in the Arduino code

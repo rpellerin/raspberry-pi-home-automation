@@ -32,7 +32,8 @@ crontab -e
 */2 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation remote_control
 
 # French and German news. There are antislashes before the % signs, cause % signs have a special meaning for cron.
-05 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
+08 21 * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m pip install -U --pre "yt-dlp[default]"
+10 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
 15 22 * * * /path/to/raspberry-pi-home-automation/.venv/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
 # Removing the subtitles file from German news
 30 22 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
@@ -59,6 +60,7 @@ cd /to/the/cloned/repo
 python3 -m venv --system-site-packages .venv # --system-site-packages to have the system-installed picamera2 module available
 source .venv/bin/activate
 pip3 install -r requirements.txt
+pip3 install Mock.GPIO # To be able to run tests locally
 pip3 install -e . # So that our package can be called directly from the CLI, like `python -m home_automation`
 
 /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation build_arduino_sketch_and_deploy
