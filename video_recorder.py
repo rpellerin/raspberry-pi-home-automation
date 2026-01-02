@@ -141,7 +141,7 @@ duration = 5  # seconds
 encoder.output = CircularOutput(buffersize=int(fps * (duration + 0.2)))
 picam2.encoder = encoder
 picam2.start()  # Start the cam only
-picam2.start_encoder()
+picam2.start_encoder(encoder)
 
 
 def alarm_state():

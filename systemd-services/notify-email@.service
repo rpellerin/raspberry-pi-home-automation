@@ -1,0 +1,9 @@
+[Unit]
+Description=Send email on failure of %i
+
+[Service]
+Type=oneshot
+# We use bash -c to pipe the status directly into the mail command
+ExecStart=/bin/bash -c '/usr/bin/systemctl status %i | /usr/bin/mail -s "Failure Alert: %i" your-email@example.com'
+User=nobody
+Group=systemd-journal
