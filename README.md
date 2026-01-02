@@ -69,6 +69,7 @@ sudo cp \
     systemd-services/shutdown.service \
     systemd-services/door-sensor.service \
     systemd-services/video-recorder.service \
+    systemd-services/notify-email@.service \
       /etc/systemd/system
 
 sudo systemctl enable shutdown.service
