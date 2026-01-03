@@ -2,12 +2,12 @@
 Description=Records video through the Raspberry Pi camera
 After=local-fs.target
 OnFailure=notify-email@%n.service
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Service]
 Restart=always
 RestartSec=3
-StartLimitBurst=5
-StartLimitIntervalSec=60
 PIDFile=/run/python_video-recorder.pid
 User=pi
 ExecStart=/home/pi/raspberry-pi-home-automation/.venv/bin/python3 -u /home/pi/raspberry-pi-home-automation/video_recorder.py

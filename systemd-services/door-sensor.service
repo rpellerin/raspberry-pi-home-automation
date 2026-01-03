@@ -2,12 +2,12 @@
 Description=Detect door state changes
 After=local-fs.target network-online.target
 OnFailure=notify-email@%n.service
+StartLimitBurst=5
+StartLimitIntervalSec=60
 
 [Service]
 Restart=always
 RestartSec=3
-StartLimitBurst=5
-StartLimitIntervalSec=60
 PIDFile=/run/python_door-sensor.pid
 User=pi
 ExecStart=/home/pi/raspberry-pi-home-automation/.venv/bin/python3 -u /home/pi/raspberry-pi-home-automation/door-sensor.py
