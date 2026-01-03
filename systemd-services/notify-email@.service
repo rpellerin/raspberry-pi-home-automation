@@ -1,5 +1,7 @@
 [Unit]
 Description=Send email on failure of %i
+# This service is called by other services when they fail to start. It sends an email to root@localhost.
+# It does not need to be enabled using `sudo systemctl enable xxx`.
 
 [Service]
 Type=oneshot
