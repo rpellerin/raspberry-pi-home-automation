@@ -71,9 +71,10 @@ def post_to_pushover(message, attachment):
                         "image/jpeg",
                     )
                 },
+                timeout=20,
             )
         else:
-            response = requests.post(PUSHOVER_URL, data=payload)
+            response = requests.post(PUSHOVER_URL, data=payload, timeout=20)
         return response.status_code == 200
     except requests.exceptions.RequestException:
         logging.error("RequestException!")

@@ -10,7 +10,7 @@ from .config import GOOGLE_SCRIPTS_URL
 def send_request(current_value):
     try:
         response = requests.get(
-            GOOGLE_SCRIPTS_URL, params={"remote_control": current_value}
+            GOOGLE_SCRIPTS_URL, params={"remote_control": current_value}, timeout=20
         )
         return (response.status_code == 200, json.loads(response.text))
     except requests.exceptions.RequestException:

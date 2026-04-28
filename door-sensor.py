@@ -52,6 +52,7 @@ def send_request(data):
                 "datetime": data["timestamp"],
                 "door_status": data["door_status"],
             },
+            timeout=20,
         )
         return response.status_code == 200
     except requests.exceptions.RequestException:

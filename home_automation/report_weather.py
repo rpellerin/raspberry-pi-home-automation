@@ -25,6 +25,7 @@ def send_request(data):
                 "humidity": data["humidity"],
                 "pressure": data["pressure"],
             },
+            timeout=20,
         )
         return response.status_code == 200
     except requests.exceptions.RequestException:

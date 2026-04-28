@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 url = "https://www.france.tv/france-2/journal-20h00/"
 
 if __name__ == '__main__':
-    html_text = requests.get(url).text
+    html_text = requests.get(url, timeout=20).text
     soup = BeautifulSoup(html_text, "html.parser")
     latest_video = soup.select_one("main #les-editions ul li:first-child a")
 
