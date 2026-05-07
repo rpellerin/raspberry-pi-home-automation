@@ -23,18 +23,18 @@ crontab -e
 0 21 * * * find /tmp -type f -iname '*.jpg' -mtime +90 -delete
 
 # Periodic update of Strava activities
-0 */1 * * * DRY_RUN=0 CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py 2>&1 | /usr/bin/logger -t STRAVA
+*/15 * * * * DRY_RUN=0 CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py 2>&1 | /usr/bin/logger -t STRAVA
 
 # Periodic reporting of temperature
-*/3 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation report_weather
+*/3 * * * * /usr/bin/timeout 1m /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation report_weather
 
 # Remote control of the Raspberry Pi
-*/2 * * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation remote_control
+*/2 * * * * /usr/bin/timeout 1m /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation remote_control
 
 # French and German news. There are antislashes before the % signs, cause % signs have a special meaning for cron.
 08 21 * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m pip install -U --pre "yt-dlp[default]"
-10 21 * * * /path/to/raspberry-pi-home-automation/bin/20h.py
-15 22 * * * /path/to/raspberry-pi-home-automation/.venv/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
+10 21 * * * /usr/bin/timeout 45m /path/to/raspberry-pi-home-automation/bin/20h.py
+15 22 * * * /usr/bin/timeout 45m /path/to/raspberry-pi-home-automation/.venv/bin/yt-dlp https://www.ardmediathek.de/sendung/tagesschau/Y3JpZDovL2Rhc2Vyc3RlLmRlL3RhZ2Vzc2NoYXU -I 1  -o "/var/lib/minidlna/\%(title)s.\%(ext)s" --embed-subs
 # Removing the subtitles file from German news
 30 22 * * * find /var/lib/minidlna -type f -iname '*.vtt' -delete
 
