@@ -80,19 +80,25 @@ auth_payload = {
     "grant_type": "refresh_token",
 }
 
-r = requests.post(auth_url, headers=json_headers, data=json.dumps(auth_payload), timeout=20)
-r.raise_for_status()
-response = json.loads(r.text)
-ACCESS_TOKEN = response["access_token"]
-RECEIVED_REFRESH_TOKEN = response["refresh_token"]
+try:
+    r = requests.post(
+        auth_url, headers=json_headers, data=json.dumps(auth_payload), timeout=20
+    )
+    r.raise_for_status()
+    response = json.loads(r.text)
+    ACCESS_TOKEN = response["access_token"]
+    RECEIVED_REFRESH_TOKEN = response["refresh_token"]
 
-REDIS_INSTANCE.set(REFRESH_TOKEN, RECEIVED_REFRESH_TOKEN)
+    REDIS_INSTANCE.set(REFRESH_TOKEN, RECEIVED_REFRESH_TOKEN)
 
-authenticated_headers = json_headers | {"Authorization": f"Bearer {ACCESS_TOKEN}"}
+    authenticated_headers = json_headers | {"Authorization": f"Bearer {ACCESS_TOKEN}"}
 
-r = requests.get(activities_url, headers=authenticated_headers, timeout=20)
-r.raise_for_status()
-activities = json.loads(r.text)
+    r = requests.get(activities_url, headers=authenticated_headers, timeout=20)
+    r.raise_for_status()
+    activities = json.loads(r.text)
+except requests.exceptions.RequestException as e:
+    print(f"Error communicating with Strava: {e}", file=sys.stderr)
+    sys.exit(1)
 
 
 def was_not_yet_processed(activity):
@@ -136,19 +142,22 @@ def process_activities(activities, payload, log_message):
 
         if not DRY_RUN:
             activity_url = f"https://www.strava.com/api/v3/activities/{activity_id}"
-            r = requests.put(
-                activity_url,
-                headers=authenticated_headers,
-                data=json.dumps(payload),
-                timeout=20,
-            )
-            r.raise_for_status()
-            REDIS_INSTANCE.set(
-                f"strava_activity_{activity_id}", 1, EXPIRATION_IN_ONE_YEAR
-            )
-            print(
-                f"Marked https://www.strava.com/activities/{activity_id} as processed"
-            )
+            try:
+                r = requests.put(
+                    activity_url,
+                    headers=authenticated_headers,
+                    data=json.dumps(payload),
+                    timeout=20,
+                )
+                r.raise_for_status()
+                REDIS_INSTANCE.set(
+                    f"strava_activity_{activity_id}", 1, EXPIRATION_IN_ONE_YEAR
+                )
+                print(
+                    f"Marked https://www.strava.com/activities/{activity_id} as processed"
+                )
+            except requests.exceptions.RequestException as e:
+                print(f"Error muting activity {activity_id}: {e}", file=sys.stderr)
         else:
             print("Dry run. No effect.")
 
