@@ -1,20 +1,29 @@
 import requests
 import redis
-import importlib
 import json
 import sys
 import os
 from .config import GOOGLE_SCRIPTS_URL
 
 
-def send_request(current_value):
+def report_alarm_status_and_fetch_sheet_data(*, is_alarm_enabled):
+    """
+    Sends the current alarm status to the Google Script and fetches the desired state from the sheet
+    (force reboot and force enable alarm)
+
+    :param is_alarm_enabled: The current status of the alarm ("yes" for enabled, "no" for disabled).
+    :return: A tuple containing (success: bool, response_data: dict|None).
+    """
     try:
         response = requests.get(
-            GOOGLE_SCRIPTS_URL, params={"remote_control": current_value}, timeout=20
+            GOOGLE_SCRIPTS_URL,
+            params={"remote_control": is_alarm_enabled},
+            timeout=20,
         )
         return (response.status_code == 200, json.loads(response.text))
-    except requests.exceptions.RequestException:
-        return None
+    except requests.exceptions.RequestException as e:
+        print(f"An exception occurred: {e}", file=sys.stderr)
+        return (False, None)
 
 
 def update_alarm_state(should_enable_alarm, current_alarm_state, r):
@@ -27,7 +36,7 @@ def update_alarm_state(should_enable_alarm, current_alarm_state, r):
     if new_alarm_state != current_alarm_state:
         r.set("alarm_state", new_alarm_state)
         # We need to update the value in the sheet again, to reflect the change of state
-        send_request("yes" if new_alarm_state == "1" else "no")
+        report_alarm_status_and_fetch_sheet_data(is_alarm_enabled="yes" if new_alarm_state == "1" else "no")
 
 
 def initiate_reboot():
@@ -41,7 +50,7 @@ def run():
 
     try:
         alarm_state = r.get("alarm_state")
-        success, response = send_request("yes" if alarm_state == "1" else "no")
+        success, response = report_alarm_status_and_fetch_sheet_data(is_alarm_enabled="yes" if alarm_state == "1" else "no")
 
         if success:
             should_enable_alarm = response["shouldEnableAlarm"]
