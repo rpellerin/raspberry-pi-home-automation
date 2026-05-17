@@ -26,10 +26,10 @@ crontab -e
 */15 * * * * DRY_RUN=0 CLIENT_ID=123 CLIENT_SECRET="abc456" REFRESH_TOKEN=xyz /path/to/raspberry-pi-home-automation/auto-mute-strava-activities.py 2>&1 | /usr/bin/logger -t STRAVA
 
 # Periodic reporting of temperature
-*/3 * * * * /usr/bin/timeout 1m /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation report_weather
+*/3 * * * * /usr/bin/timeout 1m /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation report_weather 2>&1 | /usr/bin/logger -t REPORT_WEATHER
 
 # Remote control of the Raspberry Pi
-*/2 * * * * /usr/bin/timeout 1m /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation remote_control
+*/2 * * * * /usr/bin/timeout 1m /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation remote_control 2>&1 | /usr/bin/logger -t REMOTE_CONTROL
 
 # French and German news. There are antislashes before the % signs, cause % signs have a special meaning for cron.
 08 21 * * * /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m pip install -U --pre "yt-dlp[default]"
@@ -42,6 +42,8 @@ sudo su
 crontab -e
 @reboot /bin/sleep 20; /usr/sbin/exim -qff; echo "So you know... ($(/bin/date))\n\n$(/usr/bin/tail -n 500 /var/log/syslog)" | mail -s "Rpi turned on 20secs ago" root
 ```
+
+Cron jobs logs are accessible using `journalctl -u cron.service` or `less /var/log/syslog`, or `journalctl -t REMOTE_CONTROL|REPORT_WEATHER`, thanks to `| /usr/bin/logger -t <NAME>`.
 
 ## Rest of the setup
 

@@ -22,6 +22,7 @@ def report_alarm_status_and_fetch_sheet_data(*, is_alarm_enabled):
         )
         return (response.status_code == 200, json.loads(response.text))
     except requests.exceptions.RequestException as e:
+        # Would be logged to `journalctl -u cron.service`
         print(f"An exception occurred: {e}", file=sys.stderr)
         return (False, None)
 
@@ -67,6 +68,7 @@ def run():
         success = False
 
     if not success:
+        # Would be logged to `journalctl -u cron.service`
         print("Failed to fetch 'remote_control' from App Script", file=sys.stderr)
 
     return success
