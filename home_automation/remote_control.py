@@ -41,7 +41,7 @@ def update_alarm_state(should_enable_alarm, current_alarm_state, r):
 
 
 def initiate_reboot():
-    os.system(f'echo "As requested." | mail -s "Raspberry is rebooting" root@localhost')
+    os.system(f'echo "As requested on $(/bin/date)." | mail -s "Raspberry is rebooting" root@localhost')
     os.system("sudo reboot")
 
 
