@@ -50,7 +50,7 @@ def test_update_alarm_state_changes(mock_report_alarm_status_and_fetch_sheet_dat
     update_alarm_state(
         should_enable_alarm="yes",
         current_alarm_state="0",
-        r=mock_redis
+        redis=mock_redis
     )
     
     mock_redis.set.assert_called_once_with("alarm_state", "1")
@@ -64,7 +64,7 @@ def test_update_alarm_state_no_change(mock_report_alarm_status_and_fetch_sheet_d
     update_alarm_state(
         should_enable_alarm="yes",
         current_alarm_state="1",
-        r=mock_redis
+        redis=mock_redis
     )
 
     mock_redis.set.assert_not_called()
@@ -80,7 +80,7 @@ def test_update_alarm_state_sync_failure(mock_report_alarm_status_and_fetch_shee
     update_alarm_state(
         should_enable_alarm="yes",
         current_alarm_state="0",
-        r=mock_redis
+        redis=mock_redis
     )
 
     # Redis should still be updated

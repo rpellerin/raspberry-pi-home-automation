@@ -27,7 +27,7 @@ def report_alarm_status_and_fetch_sheet_data(*, is_alarm_enabled):
         return (False, None)
 
 
-def update_alarm_state(*, should_enable_alarm, current_alarm_state, r):
+def update_alarm_state(*, should_enable_alarm, current_alarm_state, redis):
     new_alarm_state = current_alarm_state
     if should_enable_alarm == "yes":
         new_alarm_state = "1"
@@ -35,7 +35,7 @@ def update_alarm_state(*, should_enable_alarm, current_alarm_state, r):
         new_alarm_state = "0"
 
     if new_alarm_state != current_alarm_state:
-        r.set("alarm_state", new_alarm_state)
+        redis.set("alarm_state", new_alarm_state)
         # We need to update the value in the sheet again, to reflect the change of state
         success, response = report_alarm_status_and_fetch_sheet_data(is_alarm_enabled="yes" if new_alarm_state == "1" else "no")
         if not success:
@@ -48,11 +48,11 @@ def initiate_reboot():
 
 
 def run():
-    r = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
+    redis_instance = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
     success = False
 
     try:
-        alarm_state = r.get("alarm_state")
+        alarm_state = redis_instance.get("alarm_state")
         success, response = report_alarm_status_and_fetch_sheet_data(is_alarm_enabled="yes" if alarm_state == "1" else "no")
 
         if success:
@@ -63,7 +63,7 @@ def run():
                 update_alarm_state(
                     should_enable_alarm=should_enable_alarm,
                     current_alarm_state=alarm_state,
-                    r=r
+                    redis=redis_instance
                 )
 
             if should_reboot == "yes":
