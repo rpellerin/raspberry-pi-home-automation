@@ -27,7 +27,7 @@ def report_alarm_status_and_fetch_sheet_data(*, is_alarm_enabled):
         return (False, None)
 
 
-def update_alarm_state(should_enable_alarm, current_alarm_state, r):
+def update_alarm_state(*, should_enable_alarm, current_alarm_state, r):
     new_alarm_state = current_alarm_state
     if should_enable_alarm == "yes":
         new_alarm_state = "1"
@@ -60,7 +60,11 @@ def run():
             should_reboot = response["shouldReboot"]
 
             if should_enable_alarm != "":
-                update_alarm_state(should_enable_alarm, alarm_state, r)
+                update_alarm_state(
+                    should_enable_alarm=should_enable_alarm,
+                    current_alarm_state=alarm_state,
+                    r=r
+                )
 
             if should_reboot == "yes":
                 initiate_reboot()

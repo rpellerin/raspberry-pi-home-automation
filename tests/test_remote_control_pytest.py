@@ -47,9 +47,11 @@ def test_update_alarm_state_changes(mock_report_alarm_status_and_fetch_sheet_dat
     mock_report_alarm_status_and_fetch_sheet_data.return_value = (True, {})
     
     # Current state is "0" (disabled), requested state is "yes" (enable)
-    should_enable_alarm = "yes"
-    current_alarm_state = "0"
-    update_alarm_state(should_enable_alarm, current_alarm_state, mock_redis)
+    update_alarm_state(
+        should_enable_alarm="yes",
+        current_alarm_state="0",
+        r=mock_redis
+    )
     
     mock_redis.set.assert_called_once_with("alarm_state", "1")
     mock_report_alarm_status_and_fetch_sheet_data.assert_called_once_with(is_alarm_enabled="yes")
@@ -59,9 +61,11 @@ def test_update_alarm_state_no_change(mock_report_alarm_status_and_fetch_sheet_d
     mock_redis = MagicMock()
 
     # Current state is "1" (enabled), requested state is "yes" (remain enabled)
-    should_enable_alarm = "yes"
-    current_alarm_state = "1"
-    update_alarm_state(should_enable_alarm, current_alarm_state, mock_redis)
+    update_alarm_state(
+        should_enable_alarm="yes",
+        current_alarm_state="1",
+        r=mock_redis
+    )
 
     mock_redis.set.assert_not_called()
     mock_report_alarm_status_and_fetch_sheet_data.assert_not_called()
@@ -73,9 +77,11 @@ def test_update_alarm_state_sync_failure(mock_report_alarm_status_and_fetch_shee
     mock_report_alarm_status_and_fetch_sheet_data.return_value = (False, None)
 
     # Current state is "0" (disabled), requested state is "yes" (enable)
-    should_enable_alarm = "yes"
-    current_alarm_state = "0"
-    update_alarm_state(should_enable_alarm, current_alarm_state, mock_redis)
+    update_alarm_state(
+        should_enable_alarm="yes",
+        current_alarm_state="0",
+        r=mock_redis
+    )
 
     # Redis should still be updated
     mock_redis.set.assert_called_once_with("alarm_state", "1")
