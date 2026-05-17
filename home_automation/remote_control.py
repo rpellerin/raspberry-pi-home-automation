@@ -23,7 +23,7 @@ def report_alarm_status_and_fetch_sheet_data(*, is_alarm_enabled):
         return (response.status_code == 200, json.loads(response.text))
     except requests.exceptions.RequestException as e:
         # Would be logged to `journalctl -u cron.service`
-        print(f"An exception occurred: {e}", file=sys.stderr)
+        print(f"RequestException occurred: {e}", file=sys.stderr)
         return (False, None)
 
 
@@ -37,7 +37,9 @@ def update_alarm_state(should_enable_alarm, current_alarm_state, r):
     if new_alarm_state != current_alarm_state:
         r.set("alarm_state", new_alarm_state)
         # We need to update the value in the sheet again, to reflect the change of state
-        report_alarm_status_and_fetch_sheet_data(is_alarm_enabled="yes" if new_alarm_state == "1" else "no")
+        success, response = report_alarm_status_and_fetch_sheet_data(is_alarm_enabled="yes" if new_alarm_state == "1" else "no")
+        if not success:
+            print(f"Could not push change of alarm state to the sheet (new state: {new_alarm_state})", file=sys.stderr)
 
 
 def initiate_reboot():
@@ -62,8 +64,10 @@ def run():
 
             if should_reboot == "yes":
                 initiate_reboot()
+        else:
+            print("Error when fetching sheet data", file=sys.stderr)
     except BaseException as e:
-        print("Error: %s" % str(e))
+        print("Error: %s" % str(e), file=sys.stderr)
         print(e)
         success = False
 
