@@ -112,14 +112,14 @@ def test_run_failure(mock_report_alarm_status_and_fetch_sheet_data, mock_redis_c
 @patch('home_automation.remote_control.redis.Redis')
 @patch('home_automation.remote_control.report_alarm_status_and_fetch_sheet_data')
 @patch('home_automation.remote_control.initiate_reboot')
-def test_run_triggers_reboot(mock_initiate_reboot, mock_report, mock_redis_class):
+def test_run_triggers_reboot(mock_initiate_reboot, mock_report_alarm_status_and_fetch_sheet_data, mock_redis_class):
     # Setup redis mock
     mock_redis = MagicMock()
     mock_redis.get.return_value = "1"
     mock_redis_class.return_value = mock_redis
 
     # Setup report mock (requesting reboot)
-    mock_report.return_value = (True, {"shouldEnableAlarm": "", "shouldReboot": "yes"})
+    mock_report_alarm_status_and_fetch_sheet_data.return_value = (True, {"shouldEnableAlarm": "", "shouldReboot": "yes"})
 
     result = run()
 
