@@ -49,7 +49,7 @@ PUSHOVER_URL = "https://api.pushover.net/1/messages.json"
 
 def post_to_pushover(message, attachment):
     if (PUSHOVER_USER == None) or (PUSHOVER_TOKEN == None):
-        logging.warn("Missing env vars to send to Pushover")
+        logging.warning("Missing env vars to send to Pushover")
         return
 
     payload = {
@@ -86,7 +86,7 @@ def post_to_pushover(message, attachment):
         logging.error(error)
         return False
 
-
+# Sends an email and a Pushover notification
 def post_message(message, push_notification_too, attachment=""):
     logging.info("Sending to Pushover")
     # subprocess.Popen is non blocking
