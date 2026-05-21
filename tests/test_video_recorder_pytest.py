@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch, mock_open
 
 import pytest
 
-
 @pytest.fixture
 def video_recorder_module():
     mock_picamera2 = MagicMock()
@@ -39,7 +38,6 @@ def video_recorder_module():
         importlib.reload(video_recorder)
         yield video_recorder
 
-
 @pytest.fixture(autouse=True)
 def reset_mocks(video_recorder_module):
     # Reset all relevant mocks before each test
@@ -54,7 +52,6 @@ def reset_mocks(video_recorder_module):
     video_recorder_module.pubsub = None
     return video_recorder_module
 
-
 def test_post_to_pushover_missing_creds(video_recorder_module, caplog):
     video_recorder_module.PUSHOVER_USER = None
     video_recorder_module.PUSHOVER_TOKEN = None
@@ -63,7 +60,6 @@ def test_post_to_pushover_missing_creds(video_recorder_module, caplog):
 
     assert result is None
     assert "Missing env vars to send to Pushover" in caplog.text
-
 
 @patch("video_recorder.requests.post")
 def test_post_to_pushover_success_no_attachment(mock_post, video_recorder_module):
@@ -77,7 +73,6 @@ def test_post_to_pushover_success_no_attachment(mock_post, video_recorder_module
     mock_post.assert_called_once()
     args, kwargs = mock_post.call_args
     assert kwargs["data"]["message"] == "test message"
-
 
 @patch("video_recorder.requests.post")
 def test_post_to_pushover_success_with_attachment(mock_post, video_recorder_module):
@@ -93,7 +88,6 @@ def test_post_to_pushover_success_with_attachment(mock_post, video_recorder_modu
     args, kwargs = mock_post.call_args
     assert "files" in kwargs
 
-
 @patch("video_recorder.subprocess.Popen")
 @patch("video_recorder.threading.Thread")
 def test_post_message(mock_thread, mock_popen, video_recorder_module):
@@ -104,7 +98,6 @@ def test_post_message(mock_thread, mock_popen, video_recorder_module):
     mock_popen.assert_called_once()
     mock_thread.assert_called_once()
     mock_thread.return_value.start.assert_called_once()
-
 
 def test_apply_timestamp(video_recorder_module):
     mock_request = MagicMock()
@@ -117,14 +110,12 @@ def test_apply_timestamp(video_recorder_module):
 
     video_recorder_module.cv2.putText.assert_called_once()
 
-
 def test_alarm_state(video_recorder_module):
     video_recorder_module.red.get.return_value = "1"
     assert video_recorder_module.alarm_state() is True
 
     video_recorder_module.red.get.return_value = "0"
     assert video_recorder_module.alarm_state() is False
-
 
 @patch("video_recorder.turn_led.cleanup")
 def test_killing_the_process(mock_led_cleanup, video_recorder_module):
@@ -138,7 +129,6 @@ def test_killing_the_process(mock_led_cleanup, video_recorder_module):
     mock_led_cleanup.assert_called_once()
     video_recorder_module.picam2.stop_encoder.assert_called_once()
     video_recorder_module.picam2.stop.assert_called_once()
-
 
 @patch("video_recorder.post_message")
 @patch("video_recorder.turn_led.turn_on")
@@ -167,7 +157,6 @@ def test_door_opened_alarm_enabled(
     assert "ffmpeg" in str(mock_os_system.call_args)
     mock_led_off.assert_called_once()
 
-
 @patch("video_recorder.post_message")
 @patch("video_recorder.turn_led.turn_on")
 @patch("video_recorder.turn_led.turn_off")
@@ -193,7 +182,6 @@ def test_door_opened_alarm_disabled(
     mock_os_system.assert_called()
     assert "ffmpeg" in str(mock_os_system.call_args)
     mock_led_off.assert_called_once()
-
 
 @patch("video_recorder.post_message")
 @patch("video_recorder.turn_led.turn_on")
