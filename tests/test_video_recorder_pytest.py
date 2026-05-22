@@ -41,7 +41,7 @@ def video_recorder_module():
 @pytest.fixture(autouse=True)
 def reset_mocks(video_recorder_module):
     # Reset all relevant mocks before each test
-    video_recorder_module.red.get.reset_mock()
+    video_recorder_module.redis_instance.get.reset_mock()
     video_recorder_module.picam2.capture_file.reset_mock()
     video_recorder_module.picam2.stop_encoder.reset_mock()
     video_recorder_module.picam2.stop.reset_mock()
@@ -111,10 +111,10 @@ def test_apply_timestamp(video_recorder_module):
     video_recorder_module.cv2.putText.assert_called_once()
 
 def test_alarm_state(video_recorder_module):
-    video_recorder_module.red.get.return_value = "1"
+    video_recorder_module.redis_instance.get.return_value = "1"
     assert video_recorder_module.alarm_state() is True
 
-    video_recorder_module.red.get.return_value = "0"
+    video_recorder_module.redis_instance.get.return_value = "0"
     assert video_recorder_module.alarm_state() is False
 
 @patch("video_recorder.turn_led.cleanup")
@@ -143,7 +143,7 @@ def test_door_opened_alarm_enabled(
     mock_post_message,
     video_recorder_module,
 ):
-    video_recorder_module.red.get.return_value = "1"
+    video_recorder_module.redis_instance.get.return_value = "1"
 
     video_recorder_module.door_status_change({"data": "open"})
 
@@ -170,7 +170,7 @@ def test_door_opened_alarm_disabled(
     mock_post_message,
     video_recorder_module,
 ):
-    video_recorder_module.red.get.return_value = "0"
+    video_recorder_module.redis_instance.get.return_value = "0"
 
     video_recorder_module.door_status_change({"data": "open"})
 
