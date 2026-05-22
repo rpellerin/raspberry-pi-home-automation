@@ -118,7 +118,7 @@ def signal_handler(sig, frame):
     logging.info("Camera stoppped")
 
 
-red = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
+redis_instance = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
 
 size = (1280, 720)
 
@@ -147,7 +147,7 @@ picam2.start_encoder(encoder)
 
 
 def alarm_state():
-    return red.get("alarm_state") == "1"
+    return redis_instance.get("alarm_state") == "1"
 
 
 def door_status_change(message):
@@ -220,7 +220,7 @@ def door_status_change(message):
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    pubsub = red.pubsub()
+    pubsub = redis_instance.pubsub()
     pubsub.subscribe(**{"door_status": door_status_change})
     thread = pubsub.run_in_thread(sleep_time=0.001)
     logging.info(f"Script is located in {REPO_PATH}")
