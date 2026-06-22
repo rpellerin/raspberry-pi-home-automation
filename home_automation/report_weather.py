@@ -55,4 +55,5 @@ def send_report():
         if not successfully_sent:
             print("Failed to post to Google App Script", file=sys.stderr)
             print(data, file=sys.stderr)
-        return successfully_sent
+
+    return successfully_sent
