@@ -118,7 +118,7 @@ def signal_handler(sig, frame):
     logging.info("Camera stoppped")
 
 
-redis_instance = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
+redis_instance = redis.Redis("localhost", 6379, decode_responses=True)
 
 size = (1280, 720)
 

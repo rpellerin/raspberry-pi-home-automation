@@ -69,7 +69,7 @@ activities_url = f"https://www.strava.com/api/v3/athlete/activities?per_page=100
 
 json_headers = {"Content-Type": "application/json"}
 
-REDIS_INSTANCE = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
+REDIS_INSTANCE = redis.Redis("localhost", 6379, decode_responses=True)
 
 SAVED_REFRESH_TOKEN = REDIS_INSTANCE.get(REFRESH_TOKEN)
 

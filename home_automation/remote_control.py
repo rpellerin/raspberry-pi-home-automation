@@ -48,7 +48,7 @@ def initiate_reboot():
 
 
 def run():
-    redis_instance = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
+    redis_instance = redis.Redis("localhost", 6379, decode_responses=True)
     success = False
 
     try:

@@ -108,7 +108,7 @@ isOpen = "unknown (script started)"
 oldIsOpen = None
 last_thread = None
 
-r = redis.Redis("localhost", 6379, charset="utf-8", decode_responses=True)
+r = redis.Redis("localhost", 6379, decode_responses=True)
 # TODO: put "alarm_state" in a constant, and replace all occurrences
 current_or_future_alarm_state = r.get("alarm_state") or "unknown"
 actual_current_alarm_state = current_or_future_alarm_state
