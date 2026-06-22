@@ -7,3 +7,4 @@ config.txt
 # Other
 __pycache__/
 *.egg-info/
+.antigravitycli/

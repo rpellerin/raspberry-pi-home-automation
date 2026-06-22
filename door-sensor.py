@@ -58,10 +58,6 @@ def send_request(data):
     except requests.exceptions.RequestException:
         logging.error("RequestException!")
         return False
-    except BaseException as error:
-        logging.error("BaseException!")
-        logging.error(error)
-        return False
 
 
 def post_to_google_scripts(data, r, last_thread):
@@ -82,6 +78,9 @@ def post_to_google_scripts(data, r, last_thread):
     successfully_sent = False
     try:
         successfully_sent = send_request(data)
+        if not successfully_sent:
+            time.sleep(1)
+            successfully_sent = send_request(data)
     except BaseException as e:
         logging.error("Error: %s" % str(e))
 
