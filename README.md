@@ -61,7 +61,6 @@ cd /to/the/cloned/repo
 
 python3 -m venv --system-site-packages .venv # --system-site-packages to have the system-installed picamera2 module available
 source .venv/bin/activate
-pip3 install -r requirements.txt
 pip3 install Mock.GPIO # To be able to run tests locally
 pip3 install -e . # So that our package can be called directly from the CLI, like `python -m home_automation`
 
