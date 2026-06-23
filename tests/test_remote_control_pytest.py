@@ -1,6 +1,7 @@
 import json
+import redis
 import requests
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 from home_automation.remote_control import (
     report_alarm_status_and_fetch_sheet_data,
     update_alarm_state,
@@ -90,13 +91,16 @@ def test_update_alarm_state_sync_failure(mock_report_alarm_status_and_fetch_shee
     captured = capsys.readouterr()
     assert "Could not push change of alarm state to the sheet (new state: 1)" in captured.err
 
-@patch('home_automation.remote_control.redis.Redis')
+# The test_run_* tests below let the real redis.Redis() constructor run.
+# It connects lazily (no server needed at construction time), so invalid kwargs
+# like the removed `charset` argument raise TypeError immediately — no mock to
+# silently swallow the error.  Only the I/O methods (.get, .set) are mocked.
+
+@patch.object(redis.Redis, 'set')
+@patch.object(redis.Redis, 'get')
 @patch('home_automation.remote_control.report_alarm_status_and_fetch_sheet_data')
-def test_run_success(mock_report_alarm_status_and_fetch_sheet_data, mock_redis_class):
-    # Setup redis mock
-    mock_redis = MagicMock()
-    mock_redis.get.return_value = "1"
-    mock_redis_class.return_value = mock_redis
+def test_run_success(mock_report_alarm_status_and_fetch_sheet_data, mock_redis_get, mock_redis_set):
+    mock_redis_get.return_value = "1"
 
     # Setup report mock (requesting alarm to be disabled)
     mock_report_alarm_status_and_fetch_sheet_data.return_value = (True, {"shouldEnableAlarm": "no", "shouldReboot": ""})
@@ -104,25 +108,21 @@ def test_run_success(mock_report_alarm_status_and_fetch_sheet_data, mock_redis_c
     result = run()
 
     assert result is True
-    mock_redis.get.assert_called_with("alarm_state")
+    mock_redis_get.assert_called_with("alarm_state")
     
     # Verify the new state was passed to Redis
-    mock_redis.set.assert_called_with("alarm_state", "0")
+    mock_redis_set.assert_called_with("alarm_state", "0")
 
     # Verify both calls to the report function
-    from unittest.mock import call
     mock_report_alarm_status_and_fetch_sheet_data.assert_has_calls([
         call(is_alarm_enabled="yes"), # First to fetch the data from the cell
         call(is_alarm_enabled="no") # Then to update again the last status to the spreadsheet, following the local update
     ])
 
-@patch('home_automation.remote_control.redis.Redis')
+@patch.object(redis.Redis, 'get')
 @patch('home_automation.remote_control.report_alarm_status_and_fetch_sheet_data')
-def test_run_failure(mock_report_alarm_status_and_fetch_sheet_data, mock_redis_class, capsys):
-    # Setup redis mock
-    mock_redis = MagicMock()
-    mock_redis.get.return_value = "0"
-    mock_redis_class.return_value = mock_redis
+def test_run_failure(mock_report_alarm_status_and_fetch_sheet_data, mock_redis_get, capsys):
+    mock_redis_get.return_value = "0"
 
     # Setup report mock to return failure
     mock_report_alarm_status_and_fetch_sheet_data.return_value = (False, None)
@@ -130,20 +130,17 @@ def test_run_failure(mock_report_alarm_status_and_fetch_sheet_data, mock_redis_c
     result = run()
 
     assert result is False
-    mock_redis.get.assert_called_with("alarm_state")
+    mock_redis_get.assert_called_with("alarm_state")
     mock_report_alarm_status_and_fetch_sheet_data.assert_called_with(is_alarm_enabled="no")
     captured = capsys.readouterr()
     assert "Error when fetching sheet data" in captured.err
     assert "Failed to fetch 'remote_control' from App Script" in captured.err
 
-@patch('home_automation.remote_control.redis.Redis')
+@patch.object(redis.Redis, 'get')
 @patch('home_automation.remote_control.report_alarm_status_and_fetch_sheet_data')
 @patch('home_automation.remote_control.initiate_reboot')
-def test_run_triggers_reboot(mock_initiate_reboot, mock_report_alarm_status_and_fetch_sheet_data, mock_redis_class):
-    # Setup redis mock
-    mock_redis = MagicMock()
-    mock_redis.get.return_value = "1"
-    mock_redis_class.return_value = mock_redis
+def test_run_triggers_reboot(mock_initiate_reboot, mock_report_alarm_status_and_fetch_sheet_data, mock_redis_get):
+    mock_redis_get.return_value = "1"
 
     # Setup report mock (requesting reboot)
     mock_report_alarm_status_and_fetch_sheet_data.return_value = (True, {"shouldEnableAlarm": "", "shouldReboot": "yes"})
