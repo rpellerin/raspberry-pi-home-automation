@@ -6,11 +6,11 @@ beautifulsoup4==4.14.3
 #gpiozero==1.6.2 # installed through the APT package `python3-gpiozero`
 #idna==2.10
 pyserial==3.5
-pytest==9.0.3
-redis==8.0.0
+pytest==7.4.4
+redis==7.4.1
 requests==2.34.2
 RPi.bme280==0.2.4
-#RPi.GPIO==0.7.1 # installed through the APT package `python3-rpi.gpio`, presented by default on Raspbian
+#RPi.GPIO==0.7.1 # installed through the APT package `python3-rpi.gpio`, present by default on Raspbian
 smbus2==0.6.1
 #urllib3==1.26.18
-yt-dlp==2026.6.9
+yt-dlp==2025.07.25
