@@ -61,7 +61,8 @@ cd /to/the/cloned/repo
 
 python3 -m venv --system-site-packages .venv # --system-site-packages to have the system-installed picamera2 module available
 source .venv/bin/activate
-pip3 install Mock.GPIO # To be able to run tests locally
+pip3 install --upgrade pip setuptools wheel
+pip3 install Mock.GPIO # To be able to run tests locally (not necessary on the Raspberry Pi, only laptop)
 pip3 install -e . # So that our package can be called directly from the CLI, like `python -m home_automation`
 
 /path/to/raspberry-pi-home-automation/.venv/bin/python3 -m home_automation build_arduino_sketch_and_deploy
