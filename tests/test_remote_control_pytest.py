@@ -92,9 +92,7 @@ def test_update_alarm_state_sync_failure(mock_report_alarm_status_and_fetch_shee
     assert "Could not push change of alarm state to the sheet (new state: 1)" in captured.err
 
 # The test_run_* tests below let the real redis.Redis() constructor run.
-# It connects lazily (no server needed at construction time), so invalid kwargs
-# like the removed `charset` argument raise TypeError immediately — no mock to
-# silently swallow the error.  Only the I/O methods (.get, .set) are mocked.
+# It connects lazily (no server needed at construction time).
 
 @patch.object(redis.Redis, 'set')
 @patch.object(redis.Redis, 'get')
