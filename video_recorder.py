@@ -231,7 +231,7 @@ def door_status_change(message):
 
             logging.critical("Forcing script exit to allow systemd restart...")
             # os._exit immediately kills the main process from a sub-thread
-            os._exit(1) # Instantly kills the entire process from this background thread, forcing systemd to restart it
+            os._exit(1)
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
