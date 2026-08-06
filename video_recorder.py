@@ -102,6 +102,12 @@ def apply_timestamp(request):
     with MappedArray(request, "main") as m:
         cv2.putText(m.array, timestamp, origin, font, scale, colour, thickness)
 
+def stop_camera_and_led():
+    turn_led.cleanup()
+    picam2.stop_encoder()
+    logging.info("Encoder stopped")
+    picam2.stop()
+    logging.info("Camera stoppped")
 
 def signal_handler(sig, frame):
     logging.info("You pressed Ctrl+C!")
@@ -111,11 +117,7 @@ def signal_handler(sig, frame):
         thread.join(timeout=1.0)
         pubsub.close()
 
-    turn_led.cleanup()
-    picam2.stop_encoder()
-    logging.info("Encoder stopped")
-    picam2.stop()
-    logging.info("Camera stoppped")
+    stop_camera_and_led()
 
 
 redis_instance = redis.Redis("localhost", 6379, decode_responses=True)
@@ -217,15 +219,13 @@ def door_status_change(message):
                 )
             logging.info("Ffmpeg done")
 
-        except RuntimeError as e:
+        except Exception as e:
             # Picamera2 / libcamera errors throw RuntimeErrors on timeout or hardware failure
             logging.critical(f"Camera hardware failure detected: {e}")
 
             # Clean up what we can before dying
             try:
-                turn_led.cleanup()
-                picam2.stop_encoder()
-                picam2.stop()
+                stop_camera_and_led()
             except Exception:
                 pass # Hardware might be totally unresponsive, ignore secondary failures
 
