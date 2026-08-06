@@ -102,6 +102,12 @@ def apply_timestamp(request):
     with MappedArray(request, "main") as m:
         cv2.putText(m.array, timestamp, origin, font, scale, colour, thickness)
 
+def stop_camera_and_led():
+    turn_led.cleanup()
+    picam2.stop_encoder()
+    logging.info("Encoder stopped")
+    picam2.stop()
+    logging.info("Camera stoppped")
 
 def signal_handler(sig, frame):
     logging.info("You pressed Ctrl+C!")
@@ -111,11 +117,7 @@ def signal_handler(sig, frame):
         thread.join(timeout=1.0)
         pubsub.close()
 
-    turn_led.cleanup()
-    picam2.stop_encoder()
-    logging.info("Encoder stopped")
-    picam2.stop()
-    logging.info("Camera stoppped")
+    stop_camera_and_led()
 
 
 redis_instance = redis.Redis("localhost", 6379, decode_responses=True)
@@ -172,50 +174,64 @@ def door_status_change(message):
 
         turn_led.turn_on()
 
-        photo1 = f"/tmp/{now}-1.jpg"
-        picam2.capture_file(photo1)
-        if alarm_enabled:
-            post_message(
-                "Alarm - photo 1", push_notification_too=True, attachment=photo1
-            )
+        try:
+            photo1 = f"/tmp/{now}-1.jpg"
+            picam2.capture_file(photo1)
+            if alarm_enabled:
+                post_message(
+                    "Alarm - photo 1", push_notification_too=True, attachment=photo1
+                )
 
-        logging.info("Recording...")
-        filename = f"/tmp/{now}.h264"
-        encoder.output.fileoutput = filename
-        encoder.output.start() # TODO: this line (or the one 4 lines below) can crash sometimes. Find a way to recover.
+            logging.info("Recording...")
+            filename = f"/tmp/{now}.h264"
+            encoder.output.fileoutput = filename
+            encoder.output.start()
 
-        time.sleep(5)  # 5 seconds of video this far
-        photo2 = f"/tmp/{now}-2.jpg"
-        logging.info("Taking photo 2...")
-        picam2.capture_file(photo2) # TODO: this line can crash sometimes. Find a way to recover.
-        logging.info("Done")
+            time.sleep(5)  # 5 seconds of video this far
+            photo2 = f"/tmp/{now}-2.jpg"
+            logging.info("Taking photo 2...")
+            picam2.capture_file(photo2)
+            logging.info("Done")
 
-        if alarm_enabled:
-            post_message(
-                "Alarm - photo 2", push_notification_too=True, attachment=photo2
-            )
+            if alarm_enabled:
+                post_message(
+                    "Alarm - photo 2", push_notification_too=True, attachment=photo2
+                )
 
-        time.sleep(5)  # 10 seconds of video this far
-        photo3 = f"/tmp/{now}-3.jpg"
-        picam2.capture_file(photo3)
-        if alarm_enabled:
-            post_message(
-                "Alarm - photo 3", push_notification_too=True, attachment=photo3
-            )
+            time.sleep(5)  # 10 seconds of video this far
+            photo3 = f"/tmp/{now}-3.jpg"
+            picam2.capture_file(photo3)
+            if alarm_enabled:
+                post_message(
+                    "Alarm - photo 3", push_notification_too=True, attachment=photo3
+                )
 
-        time.sleep(5)  # 15 seconds of video this far
+            time.sleep(5)  # 15 seconds of video this far
 
-        encoder.output.stop()
-        turn_led.turn_off()
-        logging.info("Done recording")
-        final_filename = f"{filename}.mp4"
-        os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
-        if alarm_enabled:
-            post_message(
-                "Alarm - video", push_notification_too=False, attachment=final_filename
-            )
-        logging.info("Ffmpeg done")
+            encoder.output.stop()
+            turn_led.turn_off()
+            logging.info("Done recording")
+            final_filename = f"{filename}.mp4"
+            os.system(f"ffmpeg -r {fps} -i {filename} -vcodec copy {final_filename}")
+            if alarm_enabled:
+                post_message(
+                    "Alarm - video", push_notification_too=False, attachment=final_filename
+                )
+            logging.info("Ffmpeg done")
 
+        except Exception as e:
+            # Picamera2 / libcamera errors throw RuntimeErrors on timeout or hardware failure
+            logging.critical(f"Camera hardware failure detected: {e}")
+
+            # Clean up what we can before dying
+            try:
+                stop_camera_and_led()
+            except Exception:
+                pass # Hardware might be totally unresponsive, ignore secondary failures
+
+            logging.critical("Forcing script exit to allow systemd restart...")
+            # os._exit immediately kills the main process from a sub-thread
+            os._exit(1)
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
