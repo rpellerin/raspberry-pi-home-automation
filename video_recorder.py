@@ -153,28 +153,34 @@ def alarm_state():
 
 
 def door_status_change(message):
-    door_status = message["data"]
-    logging.info("Door status received: " + door_status)
-    if door_status == "open" or door_status == "still_open" or door_status == "motion":
-        now = time.strftime("%Y-%m-%dT%H:%M:%S")
+    # This entire function runs in a background Redis pub/sub thread.
+    # We wrap the *entire* function in a try/except because if ANY unhandled exception
+    # (e.g. redis.ConnectionError, picamera hardware failure, GPIO error) kills this thread,
+    # the main Python process will NOT exit (because picamera2 maintains its own non-daemon threads).
+    # This would result in a zombie process that systemd thinks is healthy.
+    # Catching everything and calling os._exit(1) forces the entire process to die so systemd restarts it.
+    try:
+        door_status = message["data"]
+        logging.info("Door status received: " + door_status)
+        if door_status == "open" or door_status == "still_open" or door_status == "motion":
+            now = time.strftime("%Y-%m-%dT%H:%M:%S")
 
-        alarm_enabled = alarm_state()
+            alarm_enabled = alarm_state()
 
-        if alarm_enabled:
-            if door_status == "open":
-                post_message("Door just opened!", push_notification_too=True)
-            elif door_status == "still_open":
-                post_message("Door still open", push_notification_too=True)
-            elif door_status == "motion":
-                post_message("Motion detected", push_notification_too=True)
-            else:
-                post_message(
-                    f"Alert! Received: {door_status}", push_notification_too=True
-                )
+            if alarm_enabled:
+                if door_status == "open":
+                    post_message("Door just opened!", push_notification_too=True)
+                elif door_status == "still_open":
+                    post_message("Door still open", push_notification_too=True)
+                elif door_status == "motion":
+                    post_message("Motion detected", push_notification_too=True)
+                else:
+                    post_message(
+                        f"Alert! Received: {door_status}", push_notification_too=True
+                    )
 
-        turn_led.turn_on()
+            turn_led.turn_on()
 
-        try:
             photo1 = f"/tmp/{now}-1.jpg"
             picam2.capture_file(photo1)
             if alarm_enabled:
@@ -219,19 +225,19 @@ def door_status_change(message):
                 )
             logging.info("Ffmpeg done")
 
-        except Exception as e:
-            # Picamera2 / libcamera errors throw RuntimeErrors on timeout or hardware failure
-            logging.critical(f"Camera hardware failure detected: {e}")
+    except Exception as e:
+        # Catch any hardware timeout, Redis disconnect, etc.
+        logging.critical(f"Unrecoverable error in recording pipeline: {e}")
 
-            # Clean up what we can before dying
-            try:
-                stop_camera_and_led()
-            except Exception:
-                pass # Hardware might be totally unresponsive, ignore secondary failures
+        # Clean up what we can before dying
+        try:
+            stop_camera_and_led()
+        except Exception:
+            pass # Hardware might be totally unresponsive, ignore secondary failures
 
-            logging.critical("Forcing script exit to allow systemd restart...")
-            # os._exit immediately kills the main process from a sub-thread
-            os._exit(1)
+        logging.critical("Forcing script exit to allow systemd restart...")
+        # os._exit immediately kills the main process from a sub-thread
+        os._exit(1)
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
