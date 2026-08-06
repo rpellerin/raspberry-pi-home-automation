@@ -205,3 +205,89 @@ def test_door_closed(
     video_recorder_module.picam2.capture_file.assert_not_called()
     video_recorder_module.encoder.output.start.assert_not_called()
     mock_os_system.assert_not_called()
+
+@patch("video_recorder.os._exit")
+@patch("video_recorder.stop_camera_and_led")
+@patch("video_recorder.post_message")
+@patch("video_recorder.turn_led.turn_on")
+@patch("video_recorder.time.sleep")
+@patch("video_recorder.os.system")
+def test_camera_hardware_failure_triggers_exit(
+    mock_os_system,
+    mock_sleep,
+    mock_led_on,
+    mock_post_message,
+    mock_stop_camera_and_led,
+    mock_exit,
+    video_recorder_module,
+):
+    video_recorder_module.redis_instance.get.return_value = "0"
+    video_recorder_module.picam2.capture_file.side_effect = RuntimeError(
+        "Camera timeout"
+    )
+
+    video_recorder_module.door_status_change({"data": "open"})
+
+    mock_led_on.assert_called_once()
+    mock_stop_camera_and_led.assert_called_once()
+    mock_exit.assert_called_once_with(1)
+    # Recording should NOT have started since capture_file failed first
+    video_recorder_module.encoder.output.start.assert_not_called()
+
+@patch("video_recorder.os._exit")
+@patch("video_recorder.stop_camera_and_led")
+@patch("video_recorder.post_message")
+@patch("video_recorder.turn_led.turn_on")
+@patch("video_recorder.time.sleep")
+@patch("video_recorder.os.system")
+def test_camera_failure_during_recording_triggers_exit(
+    mock_os_system,
+    mock_sleep,
+    mock_led_on,
+    mock_post_message,
+    mock_stop_camera_and_led,
+    mock_exit,
+    video_recorder_module,
+):
+    video_recorder_module.redis_instance.get.return_value = "0"
+    # First capture succeeds, second one (during recording) fails
+    video_recorder_module.picam2.capture_file.side_effect = [
+        None,
+        RuntimeError("Hardware failure"),
+    ]
+
+    video_recorder_module.door_status_change({"data": "open"})
+
+    mock_stop_camera_and_led.assert_called_once()
+    mock_exit.assert_called_once_with(1)
+    # Recording started but was interrupted
+    video_recorder_module.encoder.output.start.assert_called_once()
+    video_recorder_module.encoder.output.stop.assert_not_called()
+
+@patch("video_recorder.os._exit")
+@patch("video_recorder.stop_camera_and_led")
+@patch("video_recorder.post_message")
+@patch("video_recorder.turn_led.turn_on")
+@patch("video_recorder.time.sleep")
+@patch("video_recorder.os.system")
+def test_camera_failure_cleanup_also_fails(
+    mock_os_system,
+    mock_sleep,
+    mock_led_on,
+    mock_post_message,
+    mock_stop_camera_and_led,
+    mock_exit,
+    video_recorder_module,
+):
+    video_recorder_module.redis_instance.get.return_value = "0"
+    video_recorder_module.picam2.capture_file.side_effect = RuntimeError(
+        "Camera timeout"
+    )
+    # Cleanup itself also fails (hardware totally unresponsive)
+    mock_stop_camera_and_led.side_effect = Exception("GPIO error")
+
+    video_recorder_module.door_status_change({"data": "open"})
+
+    # Should still exit even when cleanup fails
+    mock_stop_camera_and_led.assert_called_once()
+    mock_exit.assert_called_once_with(1)
