@@ -291,3 +291,28 @@ def test_camera_failure_cleanup_also_fails(
     # Should still exit even when cleanup fails
     mock_stop_camera_and_led.assert_called_once()
     mock_exit.assert_called_once_with(1)
+
+import redis
+@patch("video_recorder.os._exit")
+@patch("video_recorder.stop_camera_and_led")
+@patch("video_recorder.post_message")
+@patch("video_recorder.turn_led.turn_on")
+@patch("video_recorder.time.sleep")
+@patch("video_recorder.os.system")
+def test_redis_failure_triggers_exit(
+    mock_os_system,
+    mock_sleep,
+    mock_led_on,
+    mock_post_message,
+    mock_stop_camera_and_led,
+    mock_exit,
+    video_recorder_module,
+):
+    video_recorder_module.redis_instance.get.side_effect = redis.ConnectionError("Redis connection lost")
+
+    video_recorder_module.door_status_change({"data": "open"})
+
+    mock_led_on.assert_not_called()
+    mock_stop_camera_and_led.assert_called_once()
+    mock_exit.assert_called_once_with(1)
+    video_recorder_module.picam2.capture_file.assert_not_called()
