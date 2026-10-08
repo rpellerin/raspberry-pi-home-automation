@@ -19,7 +19,7 @@ if __name__ == '__main__':
     try:
         html_text = requests.get(url, timeout=20).text
         soup = BeautifulSoup(html_text, "html.parser")
-        latest_video = soup.select_one("main #les-editions ul li:first-child a")
+        latest_video = soup.select_one("main #les-emissions ul li:first-child a")
 
         if latest_video != None:
             video_url = re.sub(r"^/", "https://www.france.tv/", latest_video["href"])
@@ -32,6 +32,8 @@ if __name__ == '__main__':
                 }
             ) as ydl:
                 ydl.download([video_url])
+        else:
+            print('No video found')
     except requests.exceptions.RequestException as e:
         print(f"Error fetching {url}: {e}", file=sys.stderr)
         sys.exit(1)
