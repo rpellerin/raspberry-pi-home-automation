@@ -46,6 +46,22 @@ void playOffSound() {
 // them all, delaying the processing of other events such as "ON pressed" or "OFF pressed".
 bool shouldReportDetectedMotion = true;
 
+void soundAlarm() {
+  digitalWrite(BUZZER, HIGH);
+  delay(100);
+  digitalWrite(BUZZER, LOW);
+}
+
+int alarmLoopsCount = -1;
+
+void startAlarm() {
+  alarmLoopsCount = 0;
+}
+
+void stopAlarm() {
+  alarmLoopsCount = -1;
+}
+
 void readInputFromRaspberryPi() {
   if (Serial.available() > 0) {
     String data = Serial.readStringUntil('\n');
@@ -60,11 +76,41 @@ void readInputFromRaspberryPi() {
     if (data == "arm_alarm") {
       shouldReportDetectedMotion = true;
     }
+    if (data == "sound_alarm") {
+      startAlarm();
+    }
+    if (data == "do_not_sound_alarm") {
+      stopAlarm();
+    }
+  }
+}
+
+bool shouldSoundAlarm() {
+  if (alarmLoopsCount >= 0) {
+    alarmLoopsCount = alarmLoopsCount + 1;
+
+    if (alarmLoopsCount > 60) {
+      // It's been 9 secondes (60 loops of 150ms (100ms @line 46 + 50ms @line 130))
+      // These 9 seconds MUST be lower than `REEMIT_AFTER_SECONDS` in `door-sensor.py`.
+      // They're here to prevent the alarm from sounding forever in case of malfunction/crash in door-sensor.py.
+      alarmLoopsCount = -1;
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+  else {
+    return false;
   }
 }
 
 void loop() {
   readInputFromRaspberryPi();
+
+  if(shouldSoundAlarm()) {
+    soundAlarm();
+  }
 
   if (mySwitch.available()) { // If we received a RF signal
     int value = mySwitch.getReceivedValue();
