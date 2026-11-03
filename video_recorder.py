@@ -182,7 +182,8 @@ def door_status_change(message):
             turn_led.turn_on()
 
             photo1 = f"/tmp/{now}-1.jpg"
-            picam2.capture_file(photo1)
+            img1 = picam2.capture_array()
+            cv2.imwrite(photo1, img1)
             if alarm_enabled:
                 post_message(
                     "Alarm - photo 1", push_notification_too=True, attachment=photo1
@@ -196,7 +197,9 @@ def door_status_change(message):
             time.sleep(5)  # 5 seconds of video this far
             photo2 = f"/tmp/{now}-2.jpg"
             logging.info("Taking photo 2...")
-            picam2.capture_file(photo2)
+            # Use capture_array() instead of capture_file() while encoder is running
+            img2 = picam2.capture_array()
+            cv2.imwrite(photo2, img2)
             logging.info("Done")
 
             if alarm_enabled:
@@ -206,7 +209,8 @@ def door_status_change(message):
 
             time.sleep(5)  # 10 seconds of video this far
             photo3 = f"/tmp/{now}-3.jpg"
-            picam2.capture_file(photo3)
+            img3 = picam2.capture_array()
+            cv2.imwrite(photo3, img3)
             if alarm_enabled:
                 post_message(
                     "Alarm - photo 3", push_notification_too=True, attachment=photo3
