@@ -338,6 +338,7 @@ def test_watchdog_worker_triggers_exit_when_timeout_exceeded(
     video_recorder_module.task_start_time = 100.0
     # Simulate elapsed time > WATCHDOG_TIMEOUT (25s)
     mock_time.return_value = 130.0
+    # Raise an exception on os._exit to break out of the infinite while True loop
     mock_exit.side_effect = SystemExit
 
     with pytest.raises(SystemExit):
@@ -356,6 +357,7 @@ def test_watchdog_worker_does_not_exit_within_timeout(
     video_recorder_module.task_start_time = 100.0
     # Simulate elapsed time within timeout (10s < 25s)
     mock_time.return_value = 110.0
+    # Allow one loop iteration then raise StopIteration to break out of the while True loop
     mock_sleep.side_effect = [None, StopIteration]
 
     with pytest.raises(StopIteration):
@@ -369,6 +371,7 @@ def test_watchdog_worker_does_not_exit_when_no_active_task(
     mock_sleep, mock_exit, video_recorder_module
 ):
     video_recorder_module.clear_watchdog_task()
+    # Allow one loop iteration then raise StopIteration to break out of the while True loop
     mock_sleep.side_effect = [None, StopIteration]
 
     with pytest.raises(StopIteration):
