@@ -54,10 +54,10 @@ def send_request(data):
             },
             timeout=20,
         )
-        return response.status_code == 200
-    except requests.exceptions.RequestException:
-        logging.error("RequestException!")
-        return False
+        return response.status_code == 200, response.status_code
+    except requests.exceptions.RequestException as e:
+        logging.error("RequestException: %s" % str(e))
+        return False, -1
 
 
 def post_to_google_scripts(data, r, last_thread):
@@ -76,11 +76,13 @@ def post_to_google_scripts(data, r, last_thread):
     logging.info("Sending to Google Scripts...")
 
     successfully_sent = False
+    status = -1
+    status2 = -1
     try:
-        successfully_sent = send_request(data)
+        successfully_sent, status = send_request(data)
         if not successfully_sent:
             time.sleep(1)
-            successfully_sent = send_request(data)
+            successfully_sent, status2 = send_request(data)
     except BaseException as e:
         logging.error("Error: %s" % str(e))
 
@@ -88,10 +90,10 @@ def post_to_google_scripts(data, r, last_thread):
         logging.info(f"Successfully posted to Google Scripts {data}")
 
     if not successfully_sent:
-        logging.warning("Failed to post to Google Scripts")
+        logging.warning("Failed to post to Google Scripts, codes: ({str(status)},{str(status2)})")
         logging.warning(data)
         os.system(
-            f'echo "{str(data)}" | mail -s "Failed to post to Google." root@localhost'
+            f'echo "{str(data)}" | mail -s "Failed to post to Google. ({str(status)},{str(status2)})" root@localhost'
         )
 
 
