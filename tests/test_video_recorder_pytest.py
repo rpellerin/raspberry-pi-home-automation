@@ -411,5 +411,3 @@ def test_watchdog_thread_initialization_parameters(video_recorder_module):
             target=video_recorder_module.watchdog_worker, daemon=True
         )
         mock_instance.start.assert_called_once()
-
-

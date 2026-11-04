@@ -153,6 +153,7 @@ def signal_handler(sig, frame):
     stop_camera_and_led()
 
 
+# TODO move these 2 lines into `if __name__ == "__main__":`
 watchdog_thread = threading.Thread(target=watchdog_worker, daemon=True)
 watchdog_thread.start()
 
@@ -180,9 +181,10 @@ encoder = H264Encoder(
 )
 duration = 5  # seconds
 encoder.output = CircularOutput(buffersize=int(fps * (duration + 0.2)))
+
+# TODO move these 2 lines into `if __name__ == "__main__":`
 picam2.start()  # Start the cam only
 picam2.start_encoder(encoder)
-
 
 def alarm_state():
     return redis_instance.get("alarm_state") == "1"
