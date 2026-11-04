@@ -46,6 +46,39 @@ picam2 = Picamera2()
 
 PUSHOVER_URL = "https://api.pushover.net/1/messages.json"
 
+# WATCHDOG
+# The camera library relies on compiled C++ that can crash without "letting the Python code know about it",
+# leaving our script in a frozen state, that appears to be running, from the systemctl service viewpoint.
+# Hence we need to implement a watchdog to properly kill our Python script when an error has occured
+# deep into C++ code.
+watchdog_lock = threading.Lock()
+current_task = None
+task_start_time = 0
+WATCHDOG_TIMEOUT = 25  # Seconds before considering it frozen
+
+def watchdog_worker():
+    """Background thread that monitors if any operation is taking too long."""
+    global current_task, task_start_time
+    while True:
+        time.sleep(2)  # Check every 2 seconds
+        with watchdog_lock:
+            if current_task is not None:
+                elapsed = time.time() - task_start_time
+                if elapsed > WATCHDOG_TIMEOUT:
+                    logging.critical(f"WATCHDOG TRIGGERED: Task '{current_task}' has been frozen for {elapsed:.1f} seconds!")
+                    logging.critical("Hardware or driver has locked up. Forcing process exit for systemd restart...")
+                    os._exit(1)
+
+def set_watchdog_task(task_name):
+    global current_task, task_start_time
+    with watchdog_lock:
+        current_task = task_name
+        task_start_time = time.time()
+
+def clear_watchdog_task():
+    global current_task
+    with watchdog_lock:
+        current_task = None
 
 def post_to_pushover(message, attachment):
     if (PUSHOVER_USER == None) or (PUSHOVER_TOKEN == None):
@@ -120,6 +153,9 @@ def signal_handler(sig, frame):
     stop_camera_and_led()
 
 
+watchdog_thread = threading.Thread(target=watchdog_worker, daemon=True)
+watchdog_thread.start()
+
 redis_instance = redis.Redis("localhost", 6379, decode_responses=True)
 
 size = (1280, 720)
@@ -153,6 +189,7 @@ def alarm_state():
 
 
 def door_status_change(message):
+    set_watchdog_task("door_status_change")
     # This entire function runs in a background Redis pub/sub thread.
     # We wrap the *entire* function in a try/except because if ANY unhandled exception
     # (e.g. redis.ConnectionError, picamera hardware failure, GPIO error) kills this thread,
@@ -182,8 +219,11 @@ def door_status_change(message):
             turn_led.turn_on()
 
             photo1 = f"/tmp/{now}-1.jpg"
+            logging.info("Taking photo 1...")
+            # Use capture_array() instead of capture_file() while encoder is running
             img1 = picam2.capture_array()
             cv2.imwrite(photo1, img1)
+            logging.info("Photo 1 taken")
             if alarm_enabled:
                 post_message(
                     "Alarm - photo 1", push_notification_too=True, attachment=photo1
@@ -197,10 +237,9 @@ def door_status_change(message):
             time.sleep(5)  # 5 seconds of video this far
             photo2 = f"/tmp/{now}-2.jpg"
             logging.info("Taking photo 2...")
-            # Use capture_array() instead of capture_file() while encoder is running
             img2 = picam2.capture_array()
             cv2.imwrite(photo2, img2)
-            logging.info("Done")
+            logging.info("Photo 2 taken")
 
             if alarm_enabled:
                 post_message(
@@ -209,8 +248,10 @@ def door_status_change(message):
 
             time.sleep(5)  # 10 seconds of video this far
             photo3 = f"/tmp/{now}-3.jpg"
+            logging.info("Taking photo 3...")
             img3 = picam2.capture_array()
             cv2.imwrite(photo3, img3)
+            logging.info("Photo 3 taken")
             if alarm_enabled:
                 post_message(
                     "Alarm - photo 3", push_notification_too=True, attachment=photo3
@@ -242,6 +283,8 @@ def door_status_change(message):
         logging.critical("Forcing script exit to allow systemd restart...")
         # os._exit immediately kills the main process from a sub-thread
         os._exit(1)
+    finally:
+        clear_watchdog_task()
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
