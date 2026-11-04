@@ -48,6 +48,7 @@ def reset_mocks(video_recorder_module):
     video_recorder_module.picam2.stop.reset_mock()
     video_recorder_module.encoder.output.start.reset_mock()
     video_recorder_module.encoder.output.stop.reset_mock()
+    video_recorder_module.clear_watchdog_task()
     # Reset module level attributes if needed
     video_recorder_module.thread = None
     video_recorder_module.pubsub = None
@@ -317,3 +318,98 @@ def test_redis_failure_triggers_exit(
     mock_stop_camera_and_led.assert_called_once()
     mock_exit.assert_called_once_with(1)
     video_recorder_module.picam2.capture_array.assert_not_called()
+
+def test_set_and_clear_watchdog_task(video_recorder_module):
+    assert video_recorder_module.current_task is None
+    video_recorder_module.set_watchdog_task("test_operation")
+    assert video_recorder_module.current_task == "test_operation"
+    assert video_recorder_module.task_start_time > 0
+
+    video_recorder_module.clear_watchdog_task()
+    assert video_recorder_module.current_task is None
+
+@patch("video_recorder.os._exit")
+@patch("video_recorder.time.sleep")
+@patch("video_recorder.time.time")
+def test_watchdog_worker_triggers_exit_when_timeout_exceeded(
+    mock_time, mock_sleep, mock_exit, video_recorder_module, caplog
+):
+    video_recorder_module.set_watchdog_task("frozen_camera_task")
+    video_recorder_module.task_start_time = 100.0
+    # Simulate elapsed time > WATCHDOG_TIMEOUT (25s)
+    mock_time.return_value = 130.0
+    mock_exit.side_effect = SystemExit
+
+    with pytest.raises(SystemExit):
+        video_recorder_module.watchdog_worker()
+
+    mock_exit.assert_called_once_with(1)
+    assert "WATCHDOG TRIGGERED: Task 'frozen_camera_task' has been frozen for 30.0 seconds!" in caplog.text
+
+@patch("video_recorder.os._exit")
+@patch("video_recorder.time.sleep")
+@patch("video_recorder.time.time")
+def test_watchdog_worker_does_not_exit_within_timeout(
+    mock_time, mock_sleep, mock_exit, video_recorder_module
+):
+    video_recorder_module.set_watchdog_task("normal_task")
+    video_recorder_module.task_start_time = 100.0
+    # Simulate elapsed time within timeout (10s < 25s)
+    mock_time.return_value = 110.0
+    mock_sleep.side_effect = [None, StopIteration]
+
+    with pytest.raises(StopIteration):
+        video_recorder_module.watchdog_worker()
+
+    mock_exit.assert_not_called()
+
+@patch("video_recorder.os._exit")
+@patch("video_recorder.time.sleep")
+def test_watchdog_worker_does_not_exit_when_no_active_task(
+    mock_sleep, mock_exit, video_recorder_module
+):
+    video_recorder_module.clear_watchdog_task()
+    mock_sleep.side_effect = [None, StopIteration]
+
+    with pytest.raises(StopIteration):
+        video_recorder_module.watchdog_worker()
+
+    mock_exit.assert_not_called()
+
+@patch("video_recorder.clear_watchdog_task")
+@patch("video_recorder.set_watchdog_task")
+@patch("video_recorder.turn_led.turn_on")
+@patch("video_recorder.turn_led.turn_off")
+@patch("video_recorder.time.sleep")
+@patch("video_recorder.os.system")
+def test_door_status_change_sets_and_clears_watchdog(
+    mock_os_system,
+    mock_sleep,
+    mock_led_off,
+    mock_led_on,
+    mock_set_watchdog,
+    mock_clear_watchdog,
+    video_recorder_module,
+):
+    video_recorder_module.redis_instance.get.return_value = "0"
+    video_recorder_module.door_status_change({"data": "open"})
+
+    mock_set_watchdog.assert_called_once_with("door_status_change")
+    mock_clear_watchdog.assert_called_once()
+
+def test_watchdog_thread_is_started_and_daemon(video_recorder_module):
+    assert video_recorder_module.watchdog_thread is not None
+    assert video_recorder_module.watchdog_thread.is_alive()
+    assert video_recorder_module.watchdog_thread.daemon is True
+
+def test_watchdog_thread_initialization_parameters(video_recorder_module):
+    with patch("threading.Thread") as mock_thread:
+        mock_instance = MagicMock()
+        mock_thread.return_value = mock_instance
+        importlib.reload(video_recorder_module)
+        mock_thread.assert_called_with(
+            target=video_recorder_module.watchdog_worker, daemon=True
+        )
+        mock_instance.start.assert_called_once()
+
+
