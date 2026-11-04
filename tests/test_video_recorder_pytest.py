@@ -42,7 +42,8 @@ def video_recorder_module():
 def reset_mocks(video_recorder_module):
     # Reset all relevant mocks before each test
     video_recorder_module.redis_instance.get.reset_mock()
-    video_recorder_module.picam2.capture_file.reset_mock()
+    video_recorder_module.picam2.capture_array.reset_mock()
+    video_recorder_module.cv2.imwrite.reset_mock()
     video_recorder_module.picam2.stop_encoder.reset_mock()
     video_recorder_module.picam2.stop.reset_mock()
     video_recorder_module.encoder.output.start.reset_mock()
@@ -149,8 +150,8 @@ def test_door_opened_alarm_enabled(
 
     mock_led_on.assert_called_once()
     assert mock_post_message.call_count == 5
-    video_recorder_module.picam2.capture_file.assert_called()
-    assert video_recorder_module.picam2.capture_file.call_count == 3
+    video_recorder_module.picam2.capture_array.assert_called()
+    assert video_recorder_module.picam2.capture_array.call_count == 3
     video_recorder_module.encoder.output.start.assert_called_once()
     video_recorder_module.encoder.output.stop.assert_called_once()
     mock_os_system.assert_called()
@@ -176,7 +177,7 @@ def test_door_opened_alarm_disabled(
 
     mock_led_on.assert_called_once()
     mock_post_message.assert_not_called()
-    video_recorder_module.picam2.capture_file.assert_called()
+    video_recorder_module.picam2.capture_array.assert_called()
     video_recorder_module.encoder.output.start.assert_called_once()
     video_recorder_module.encoder.output.stop.assert_called_once()
     mock_os_system.assert_called()
@@ -202,7 +203,7 @@ def test_door_closed(
 
     mock_led_on.assert_not_called()
     mock_post_message.assert_not_called()
-    video_recorder_module.picam2.capture_file.assert_not_called()
+    video_recorder_module.picam2.capture_array.assert_not_called()
     video_recorder_module.encoder.output.start.assert_not_called()
     mock_os_system.assert_not_called()
 
@@ -222,7 +223,7 @@ def test_camera_hardware_failure_triggers_exit(
     video_recorder_module,
 ):
     video_recorder_module.redis_instance.get.return_value = "0"
-    video_recorder_module.picam2.capture_file.side_effect = RuntimeError(
+    video_recorder_module.picam2.capture_array.side_effect = RuntimeError(
         "Camera timeout"
     )
 
@@ -231,7 +232,7 @@ def test_camera_hardware_failure_triggers_exit(
     mock_led_on.assert_called_once()
     mock_stop_camera_and_led.assert_called_once()
     mock_exit.assert_called_once_with(1)
-    # Recording should NOT have started since capture_file failed first
+    # Recording should NOT have started since capture_array failed first
     video_recorder_module.encoder.output.start.assert_not_called()
 
 @patch("video_recorder.os._exit")
@@ -251,7 +252,7 @@ def test_camera_failure_during_recording_triggers_exit(
 ):
     video_recorder_module.redis_instance.get.return_value = "0"
     # First capture succeeds, second one (during recording) fails
-    video_recorder_module.picam2.capture_file.side_effect = [
+    video_recorder_module.picam2.capture_array.side_effect = [
         None,
         RuntimeError("Hardware failure"),
     ]
@@ -280,7 +281,7 @@ def test_camera_failure_cleanup_also_fails(
     video_recorder_module,
 ):
     video_recorder_module.redis_instance.get.return_value = "0"
-    video_recorder_module.picam2.capture_file.side_effect = RuntimeError(
+    video_recorder_module.picam2.capture_array.side_effect = RuntimeError(
         "Camera timeout"
     )
     # Cleanup itself also fails (hardware totally unresponsive)
@@ -315,4 +316,4 @@ def test_redis_failure_triggers_exit(
     mock_led_on.assert_not_called()
     mock_stop_camera_and_led.assert_called_once()
     mock_exit.assert_called_once_with(1)
-    video_recorder_module.picam2.capture_file.assert_not_called()
+    video_recorder_module.picam2.capture_array.assert_not_called()
